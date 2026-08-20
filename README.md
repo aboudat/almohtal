@@ -68,6 +68,29 @@ Netlify serves the live origin. Content-only changes ship by redeploying, with n
 needed, **but bump the `CACHE` name in `sw.js` when you do** or players keep the old cached copy
 and never see the change.
 
+## Android test builds
+
+For trying the game on a real phone there is a Capacitor wrapper at `../almohtal-android`, kept
+out of this repo the same way the TWA project is. It bundles the web files **inside** the APK, so
+it needs no hosting and works with the phone offline. It is a test artifact, not the ship path.
+
+```bash
+cd ../almohtal-android
+npm run apk          # stages www/, syncs, and runs gradlew assembleDebug
+node serve-apk.js    # serves the apk over the LAN so the phone can download it
+```
+
+Notes on that wrapper:
+
+- Application id is `com.almohtal.test`, deliberately different from the TWA id so a test build
+  and a future Play install never collide on the same device.
+- `sync-web.js` copies the shipping files but **skips `sw.js`**. Inside the APK the assets are
+  already local, and the service worker's cache-first handler would keep serving the previous
+  build after installing an updated APK.
+- The toolchain lives in `C:\Users\tat_4\.androidtools` (Temurin JDK 21 plus the Android SDK).
+  Gradle needs `JAVA_HOME` and `ANDROID_HOME` pointed there, and `android/local.properties`
+  already records the SDK path.
+
 ## Packaging for Google Play
 
 The Android wrapper project is **not** kept in this repo, same as Mob Rush. Regenerate it when a
