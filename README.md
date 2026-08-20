@@ -9,11 +9,14 @@ Built the same way as [Mob Rush](https://github.com/aboudat/mob-rush): a single 
 
 ## How a round runs
 
-1. **Setup.** Type the player names. Pick how many imposters, how long the discussion runs, and
-   which word categories are in play. Everything is saved on the device for next time.
+0. **Start screen.** Logo, title, a Play button, and a "how to play" sheet with the five steps.
+1. **Setup.** Type the player names, each with its own colour. Pick how many imposters, how long
+   the discussion runs, and which word categories are in play. Everything is saved on the device
+   for next time.
 2. **Pass around.** The screen names one player at a time. That player taps the button carrying
-   their own name, sees their card, taps "تم، أخفِ ومرر", and hands the phone on. Nobody can see
-   the previous player's card, because the app returns to a name-only screen between players.
+   their own name, then taps the face-down card, which flips over in 3D to show their role. They
+   tap "تم، أخفِ ومرر" and hand the phone on. Nobody can see the previous player's card, because
+   the app returns to a name-only screen between players and the next card starts face down.
 3. **Who starts.** The app picks a random player to ask the first question.
 4. **Quiet.** The phone is put down. Players question each other and vote out loud. An optional
    countdown runs on screen. The app does nothing else.
@@ -26,8 +29,15 @@ Built the same way as [Mob Rush](https://github.com/aboudat/mob-rush): a single 
 - Two imposters unlock at seven players or more, and the deal always leaves at least two players
   who know the word.
 - Word choice uses `crypto.getRandomValues` with modulo rejection, so the deal is uniform.
-- Both Arabic (RTL) and English (LTR) ship in the app, with a parallel word bank of about 170
-  words across 8 categories. The toggle is on the setup screen.
+- Both Arabic (RTL) and English (LTR) ship in the app, with a parallel word bank of about 290
+  words across 14 categories. The toggle is on the start screen and on the setup screen.
+- Player colours deliberately exclude crimson, so a face-down card never reads as the imposter card.
+
+## Look and feel
+
+Light theme on `#f4f5fa`, violet brand (`#6d3bf5`), crimson reserved for the imposter and for
+destructive actions. Screens slide in and out with direction-aware transitions, the role card is a
+real 3D flip, and everything collapses to instant under `prefers-reduced-motion`.
 
 ## Files
 
