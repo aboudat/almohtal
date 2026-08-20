@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Al Mohtal Icon Generator</title>
+<style>
+body{margin:0;padding:24px;background:#12101c;color:#f2eeff;font-family:system-ui,sans-serif}
+button{padding:12px 24px;font-size:16px;margin:6px;cursor:pointer;border:0;border-radius:8px;background:#e6b84f;color:#1a1626;font-weight:bold}
+canvas{margin:10px;border:2px solid #3a3366;border-radius:12px;width:256px;height:256px}
+h2{margin-top:24px}
+p{color:#a49dc4;line-height:1.6}
+</style></head>
+<body>
+<h1>المحتال — Icon Generator</h1>
+<p>Click each button to download the PNG, then save both files into the <b>almohtal/</b> folder.</p>
+<p><button onclick="download(192)">Download icon-192.png</button>
+   <button onclick="download(512)">Download icon-512.png</button></p>
+<h2>Preview</h2>
+<canvas id="c" width="512" height="512"></canvas>
+
+<script>
+function drawIcon(ctx, size) {
+  const s = size, k = s / 100;
+  const P = v => v * k;
+
+  // background
+  const g = ctx.createLinearGradient(0, 0, 0, s);
+  g.addColorStop(0, '#332c63');
+  g.addColorStop(0.55, '#1d1936');
+  g.addColorStop(1, '#12101c');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, s, s);
+
+  // spotlight behind the mask
+  const spot = ctx.createRadialGradient(s / 2, P(46), P(4), s / 2, P(46), P(46));
+  spot.addColorStop(0, 'rgba(230,184,79,0.20)');
+  spot.addColorStop(1, 'rgba(230,184,79,0)');
+  ctx.fillStyle = spot;
+  ctx.fillRect(0, 0, s, s);
+
+  // mask drawn offscreen so the eye holes can be punched through
+  const off = document.createElement('canvas');
+  off.width = off.height = s;
+  const o = off.getContext('2d');
+
+  o.beginPath();
+  o.moveTo(P(16), P(43));
+  o.bezierCurveTo(P(24), P(27), P(43), P(25), P(50), P(36));
+  o.bezierCurveTo(P(57), P(25), P(76), P(27), P(84), P(43));
+  o.bezierCurveTo(P(89), P(57), P(77), P(75), P(63), P(72));
+  o.bezierCurveTo(P(56), P(70), P(53), P(64), P(50), P(63));
+  o.bezierCurveTo(P(47), P(64), P(44), P(70), P(37), P(72));
+  o.bezierCurveTo(P(23), P(75), P(11), P(57), P(16), P(43));
+  o.closePath();
+
+  const mg = o.createLinearGradient(0, P(25), 0, P(75));
+  mg.addColorStop(0, '#f7d98a');
+  mg.addColorStop(0.5, '#e6b84f');
+  mg.addColorStop(1, '#a8802a');
+  o.fillStyle = mg;
+  o.fill();
+
+  o.lineWidth = P(2);
+  o.strokeStyle = '#6b4d12';
+  o.stroke();
+
+  // eye holes
+  o.globalCompositeOperation = 'destination-out';
+  o.beginPath();
+  o.ellipse(P(34), P(46), P(11), P(7), -0.20, 0, Math.PI * 2);
+  o.fill();
+  o.beginPath();
+  o.ellipse(P(66), P(46), P(11), P(7), 0.20, 0, Math.PI * 2);
+  o.fill();
+  o.globalCompositeOperation = 'source-over';
+
+  // drop shadow under the mask, then the mask itself
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.55)';
+  ctx.shadowBlur = P(6);
+  ctx.shadowOffsetY = P(3);
+  ctx.drawImage(off, 0, 0);
+  ctx.restore();
+
+  // question mark rising from behind the mask
+  ctx.fillStyle = 'rgba(242,238,255,0.92)';
+  ctx.font = '800 ' + P(26) + 'px system-ui, "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('?', s / 2, P(84));
+}
+
+const canvas = document.getElementById('c');
+drawIcon(canvas.getContext('2d'), 512);
+
+function download(size) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  drawIcon(c.getContext('2d'), size);
+  const a = document.createElement('a');
+  a.download = 'icon-' + size + '.png';
+  a.href = c.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

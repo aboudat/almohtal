@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#12101c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="المحتال - لعبة جماعية بجهاز واحد. مرر الجهاز، اكتشف المحتال.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>المحتال</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --bg:#12101c; --card:#221e3a; --card2:#2b2650; --line:#3a3366;
+    --gold:#e6b84f; --gold-d:#a8802a; --red:#e0576b; --red-d:#a33345;
+    --txt:#f2eeff; --dim:#a49dc4;
+    --pad: env(safe-area-inset-bottom, 0px);
+  }
+  html, body {
+    width:100%; height:100%; overflow:hidden; color:var(--txt);
+    font-family: system-ui, 'Segoe UI', 'Noto Sans Arabic', Tahoma, sans-serif;
+    user-select:none; -webkit-user-select:none;
+    background:#12101c;
+  }
+  body { background: radial-gradient(circle at 50% 0%, #241f42 0%, #12101c 60%); }
+
+  .screen { position:fixed; inset:0; display:none; flex-direction:column; }
+  .screen.on { display:flex; }
+
+  .top { display:flex; align-items:center; justify-content:space-between;
+         padding:calc(18px + env(safe-area-inset-top,0px)) 20px 8px; flex:0 0 auto; }
+  .brand { font-size:30px; font-weight:800; letter-spacing:1px; color:var(--gold); }
+  .lang { background:transparent; border:2px solid var(--line); color:var(--dim); font-size:14px;
+          font-weight:700; padding:7px 14px; border-radius:999px; cursor:pointer; min-width:56px;
+          font-family:inherit; }
+  .lang:active { background:var(--card); }
+
+  .scroll { flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px 20px 20px; }
+  .bot { flex:0 0 auto; padding:12px 20px calc(16px + var(--pad)); }
+
+  .lead { color:var(--dim); font-size:15px; line-height:1.6; margin-bottom:16px; }
+  .sec { font-size:13px; font-weight:700; color:var(--dim); letter-spacing:1.5px;
+         margin:22px 0 10px; text-transform:uppercase; }
+
+  .prow { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .prow .num { flex:0 0 26px; text-align:center; color:var(--dim); font-size:14px; font-weight:700; }
+  .prow input {
+    flex:1 1 auto; min-width:0; background:var(--card); border:2px solid var(--line); color:var(--txt);
+    font-size:17px; font-family:inherit; padding:13px 14px; border-radius:12px; outline:none;
+  }
+  .prow input:focus { border-color:var(--gold); }
+  .prow .del { flex:0 0 42px; height:46px; background:transparent; border:2px solid var(--line);
+               color:var(--dim); font-size:20px; border-radius:12px; cursor:pointer; line-height:1;
+               font-family:inherit; }
+  .prow .del:active { background:var(--red-d); color:#fff; border-color:var(--red-d); }
+  .prow .del:disabled { opacity:.3; }
+
+  .ghost { width:100%; background:transparent; border:2px dashed var(--line); color:var(--dim);
+           font-family:inherit; font-size:16px; font-weight:700; padding:14px; border-radius:12px;
+           cursor:pointer; margin-top:4px; }
+  .ghost:active { background:var(--card); }
+  .ghost:disabled { opacity:.35; }
+
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px;
+         background:var(--card); border:2px solid var(--line); border-radius:14px;
+         padding:12px 14px; margin-bottom:10px; }
+  .row > span { font-size:16px; font-weight:600; }
+  .seg { display:flex; gap:6px; flex:0 0 auto; }
+  .seg button { background:transparent; border:2px solid var(--line); color:var(--dim); font-family:inherit;
+                font-size:15px; font-weight:700; padding:9px 13px; border-radius:10px; cursor:pointer;
+                min-width:44px; }
+  .seg button.on { background:var(--gold); border-color:var(--gold); color:#1a1626; }
+  .seg button:disabled { opacity:.3; }
+
+  .cats { display:flex; flex-wrap:wrap; gap:8px; }
+  .cats button { background:var(--card); border:2px solid var(--line); color:var(--dim); font-family:inherit;
+                 font-size:15px; font-weight:600; padding:11px 16px; border-radius:999px; cursor:pointer; }
+  .cats button.on { background:var(--card2); border-color:var(--gold); color:var(--gold); }
+
+  .warn { color:var(--red); font-size:14px; font-weight:600; margin-top:14px; min-height:20px; line-height:1.5; }
+
+  .primary, .danger, .quiet {
+    width:100%; font-family:inherit; font-size:21px; font-weight:800; padding:18px;
+    border:none; border-radius:14px; cursor:pointer;
+  }
+  .primary { background:var(--gold); color:#1a1626; box-shadow:0 5px 0 var(--gold-d); }
+  .primary:active { transform:translateY(3px); box-shadow:0 2px 0 var(--gold-d); }
+  .primary:disabled { opacity:.4; transform:none; }
+  .danger { background:var(--red); color:#fff; box-shadow:0 5px 0 var(--red-d); }
+  .danger:active { transform:translateY(3px); box-shadow:0 2px 0 var(--red-d); }
+  .quiet { background:transparent; border:2px solid var(--line); color:var(--dim); font-size:17px; padding:15px; }
+  .quiet:active { background:var(--card); }
+  .bot .quiet { margin-top:10px; }
+
+  .mid { flex:1 1 auto; display:flex; flex-direction:column; align-items:center;
+         justify-content:center; text-align:center; padding:24px; gap:14px; }
+  .kicker { font-size:16px; color:var(--dim); font-weight:600; letter-spacing:1px; }
+  .bigname { font-size:42px; font-weight:800; color:var(--gold); line-height:1.2; word-break:break-word; }
+  .hint { font-size:15px; color:var(--dim); line-height:1.6; max-width:340px; }
+  .step { position:absolute; top:calc(18px + env(safe-area-inset-top,0px)); inset-inline-start:20px;
+          font-size:14px; color:var(--dim); font-weight:700; }
+  .exit { position:absolute; top:calc(10px + env(safe-area-inset-top,0px)); inset-inline-end:12px;
+          background:transparent; border:none; color:var(--dim); font-family:inherit;
+          font-size:26px; line-height:1; padding:8px 14px; cursor:pointer; }
+  .exit:active { color:var(--red); }
+
+  .card { width:100%; max-width:380px; background:var(--card); border:3px solid var(--line);
+          border-radius:22px; padding:38px 22px; display:flex; flex-direction:column;
+          align-items:center; gap:12px; }
+  .card.imposter { border-color:var(--red); background:linear-gradient(180deg,#3a1c2b 0%, #221e3a 100%); }
+  .card .catlbl { font-size:15px; color:var(--dim); font-weight:600; }
+  .card .word { font-size:38px; font-weight:800; color:var(--txt); line-height:1.25; word-break:break-word; }
+  .card .imp { font-size:36px; font-weight:800; color:var(--red); line-height:1.25; }
+  .card .impsub { font-size:15px; color:var(--dim); line-height:1.6; }
+
+  .timer { font-size:66px; font-weight:800; color:var(--txt); font-variant-numeric:tabular-nums;
+           letter-spacing:2px; direction:ltr; }
+  .timer.done { color:var(--red); font-size:44px; }
+
+  .revealbox { width:100%; max-width:380px; display:flex; flex-direction:column; gap:16px; }
+  .panel { background:var(--card); border:2px solid var(--line); border-radius:18px; padding:20px; }
+  .panel.red { border-color:var(--red); }
+  .panel .plbl { font-size:13px; color:var(--dim); font-weight:700; margin-bottom:8px; letter-spacing:1.5px; }
+  .panel .pval { font-size:28px; font-weight:800; color:var(--txt); line-height:1.35; word-break:break-word; }
+  .panel.red .pval { color:var(--red); }
+
+  .sheet { position:fixed; inset:0; background:rgba(8,6,16,.85); display:none;
+           align-items:center; justify-content:center; padding:24px; z-index:50; }
+  .sheet.on { display:flex; }
+  .sheet .box { width:100%; max-width:340px; background:var(--card); border:2px solid var(--line);
+                border-radius:18px; padding:24px; text-align:center; }
+  .sheet .box p { font-size:18px; font-weight:600; line-height:1.6; margin-bottom:18px; }
+  .sheet .box .quiet { margin-top:10px; }
+</style>
+</head>
+<body>
+
+<!-- ================= SETUP ================= -->
+<section id="scr-setup" class="screen on">
+  <header class="top">
+    <h1 class="brand" id="brandTitle">المحتال</h1>
+    <button id="langBtn" class="lang">EN</button>
+  </header>
+  <div class="scroll">
+    <p class="lead" data-t="setupLead"></p>
+    <div id="playerList"></div>
+    <button id="addBtn" class="ghost" data-t="addPlayer"></button>
+
+    <h2 class="sec" data-t="secSettings"></h2>
+    <div class="row">
+      <span data-t="impLabel"></span>
+      <div class="seg" id="impSeg">
+        <button data-v="1">1</button>
+        <button data-v="2">2</button>
+      </div>
+    </div>
+    <div class="row">
+      <span data-t="timerLabel"></span>
+      <div class="seg" id="timerSeg">
+        <button data-v="0" data-t="timerOff"></button>
+        <button data-v="2">2</button>
+        <button data-v="3">3</button>
+        <button data-v="5">5</button>
+      </div>
+    </div>
+
+    <h2 class="sec" data-t="secCats"></h2>
+    <div id="catList" class="cats"></div>
+    <p id="setupWarn" class="warn"></p>
+  </div>
+  <footer class="bot">
+    <button id="startBtn" class="primary" data-t="startGame"></button>
+  </footer>
+</section>
+
+<!-- ================= PASS ================= -->
+<section id="scr-pass" class="screen">
+  <div class="step" id="passStep"></div>
+  <button class="exit" id="exitBtn" aria-label="exit">×</button>
+  <div class="mid">
+    <div class="kicker" data-t="passTo"></div>
+    <div class="bigname" id="passName"></div>
+    <div class="hint" data-t="passHint"></div>
+  </div>
+  <footer class="bot">
+    <button id="imBtn" class="primary"></button>
+  </footer>
+</section>
+
+<!-- ================= CARD ================= -->
+<section id="scr-card" class="screen">
+  <div class="step" id="cardStep"></div>
+  <div class="mid">
+    <div class="kicker" id="cardOwner"></div>
+    <div class="card" id="roleCard"></div>
+  </div>
+  <footer class="bot">
+    <button id="doneBtn" class="primary" data-t="hideAndPass"></button>
+  </footer>
+</section>
+
+<!-- ================= STARTER ================= -->
+<section id="scr-starter" class="screen">
+  <div class="mid">
+    <div class="kicker" data-t="starterKicker"></div>
+    <div class="bigname" id="starterName"></div>
+    <div class="hint" data-t="starterHint"></div>
+  </div>
+  <footer class="bot">
+    <button id="playBtn" class="primary" data-t="beginRound"></button>
+  </footer>
+</section>
+
+<!-- ================= PLAY ================= -->
+<section id="scr-play" class="screen">
+  <div class="mid">
+    <div class="kicker" data-t="playKicker"></div>
+    <div class="timer" id="timerEl">--:--</div>
+    <div class="hint" id="playHint"></div>
+  </div>
+  <footer class="bot">
+    <button id="revealBtn" class="danger" data-t="revealImposter"></button>
+  </footer>
+</section>
+
+<!-- ================= REVEAL ================= -->
+<section id="scr-reveal" class="screen">
+  <div class="mid">
+    <div class="revealbox">
+      <div class="panel red">
+        <div class="plbl" id="impPanelLbl"></div>
+        <div class="pval" id="impPanelVal"></div>
+      </div>
+      <div class="panel">
+        <div class="plbl" data-t="theWordWas"></div>
+        <div class="pval" id="wordPanelVal"></div>
+      </div>
+    </div>
+  </div>
+  <footer class="bot">
+    <button id="againBtn" class="primary" data-t="playAgain"></button>
+    <button id="backBtn" class="quiet" data-t="changePlayers"></button>
+  </footer>
+</section>
+
+<!-- ================= CONFIRM SHEET ================= -->
+<div class="sheet" id="confirmSheet">
+  <div class="box">
+    <p id="sheetMsg"></p>
+    <button id="confirmYes" class="danger"></button>
+    <button id="confirmNo" class="quiet" data-t="cancel"></button>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+(() => {
+  'use strict';
+
+  /* ---------------- word bank ---------------- */
+  const CATEGORIES = [
+    { id:'food', ar:'أكل وشرب', en:'Food & Drink', words:[
+      ['كبسة','Kabsa'],['برجر','Burger'],['بيتزا','Pizza'],['شاورما','Shawarma'],
+      ['فلافل','Falafel'],['حمص','Hummus'],['معكرونة','Pasta'],['سوشي','Sushi'],
+      ['قهوة','Coffee'],['شاي','Tea'],['عصير برتقال','Orange Juice'],['تمر','Dates'],
+      ['آيس كريم','Ice Cream'],['شوكولاتة','Chocolate'],['بطاطس مقلية','French Fries'],
+      ['دجاج مشوي','Grilled Chicken'],['سمك','Fish'],['أرز','Rice'],['خبز','Bread'],
+      ['جبن','Cheese'],['بيض','Eggs'],['سلطة','Salad'],['كنافة','Kunafa'],['مندي','Mandi']
+    ]},
+    { id:'sports', ar:'رياضة', en:'Sports', words:[
+      ['كرة قدم','Football'],['كرة سلة','Basketball'],['تنس','Tennis'],['سباحة','Swimming'],
+      ['ملاكمة','Boxing'],['جري','Running'],['ركوب الخيل','Horse Riding'],['جولف','Golf'],
+      ['كرة طائرة','Volleyball'],['تزلج','Skiing'],['دراجة هوائية','Cycling'],['كاراتيه','Karate'],
+      ['مصارعة','Wrestling'],['رفع أثقال','Weightlifting'],['بلياردو','Billiards'],['شطرنج','Chess'],
+      ['تنس طاولة','Table Tennis'],['كريكت','Cricket'],['رماية','Archery'],['غوص','Diving'],
+      ['تسلق الجبال','Mountain Climbing'],['سباق سيارات','Car Racing']
+    ]},
+    { id:'places', ar:'أماكن', en:'Places', words:[
+      ['مطار','Airport'],['مستشفى','Hospital'],['مدرسة','School'],['شاطئ','Beach'],
+      ['صحراء','Desert'],['غابة','Forest'],['مكتبة','Library'],['سوق','Market'],
+      ['مطعم','Restaurant'],['صالة رياضية','Gym'],['سينما','Cinema'],['حديقة حيوان','Zoo'],
+      ['بنك','Bank'],['فندق','Hotel'],['محطة قطار','Train Station'],['ملعب','Stadium'],
+      ['متحف','Museum'],['صيدلية','Pharmacy'],['مسجد','Mosque'],['جامعة','University'],
+      ['مصعد','Elevator'],['قمة جبل','Mountain Top']
+    ]},
+    { id:'jobs', ar:'مهن', en:'Jobs', words:[
+      ['طبيب','Doctor'],['معلم','Teacher'],['مهندس','Engineer'],['طيار','Pilot'],
+      ['شرطي','Police Officer'],['إطفائي','Firefighter'],['طباخ','Chef'],['حلاق','Barber'],
+      ['محامي','Lawyer'],['ممرض','Nurse'],['مزارع','Farmer'],['نجار','Carpenter'],
+      ['كهربائي','Electrician'],['سائق تاكسي','Taxi Driver'],['صحفي','Journalist'],['مبرمج','Programmer'],
+      ['محاسب','Accountant'],['رسام','Painter'],['نادل','Waiter'],['حارس أمن','Security Guard'],
+      ['طبيب أسنان','Dentist'],['مصور','Photographer']
+    ]},
+    { id:'animals', ar:'حيوانات', en:'Animals', words:[
+      ['أسد','Lion'],['جمل','Camel'],['فيل','Elephant'],['قرد','Monkey'],
+      ['زرافة','Giraffe'],['حصان','Horse'],['قطة','Cat'],['كلب','Dog'],
+      ['أرنب','Rabbit'],['ثعبان','Snake'],['تمساح','Crocodile'],['بطريق','Penguin'],
+      ['نسر','Eagle'],['بومة','Owl'],['دلفين','Dolphin'],['قرش','Shark'],
+      ['نحلة','Bee'],['عنكبوت','Spider'],['فراشة','Butterfly'],['ذئب','Wolf'],
+      ['دب','Bear'],['صقر','Falcon']
+    ]},
+    { id:'screen', ar:'أفلام ومسلسلات', en:'Movies & TV', words:[
+      ['تيتانيك','Titanic'],['هاري بوتر','Harry Potter'],['الأسد الملك','The Lion King'],['باتمان','Batman'],
+      ['سبايدرمان','Spider-Man'],['لعبة الحبار','Squid Game'],['أفاتار','Avatar'],['جوراسيك بارك','Jurassic Park'],
+      ['فاست أند فيوريس','Fast & Furious'],['توم وجيري','Tom and Jerry'],['سبونج بوب','SpongeBob'],
+      ['ذا أوفيس','The Office'],['فريندز','Friends'],['بريكنج باد','Breaking Bad'],
+      ['ستراينجر ثينجز','Stranger Things'],['لعبة العروش','Game of Thrones'],['جوكر','Joker'],
+      ['فروزن','Frozen'],['المصفوفة','The Matrix'],['باب الحارة','Bab Al Hara']
+    ]},
+    { id:'tech', ar:'تقنية', en:'Technology', words:[
+      ['هاتف ذكي','Smartphone'],['حاسوب محمول','Laptop'],['سماعات','Headphones'],['كاميرا','Camera'],
+      ['ساعة ذكية','Smartwatch'],['طائرة مسيرة','Drone'],['روبوت','Robot'],['واي فاي','Wi-Fi'],
+      ['بطارية','Battery'],['شاشة','Screen'],['لوحة مفاتيح','Keyboard'],['فأرة','Mouse'],
+      ['طابعة','Printer'],['قمر صناعي','Satellite'],['سيارة كهربائية','Electric Car'],
+      ['ذكاء اصطناعي','Artificial Intelligence'],['يوتيوب','YouTube'],['إنستقرام','Instagram'],
+      ['بلايستيشن','PlayStation'],['شاحن','Charger']
+    ]},
+    { id:'home', ar:'أغراض المنزل', en:'Household', words:[
+      ['ثلاجة','Refrigerator'],['غسالة','Washing Machine'],['مكيف','Air Conditioner'],
+      ['مكنسة كهربائية','Vacuum Cleaner'],['أريكة','Sofa'],['سرير','Bed'],['مرآة','Mirror'],
+      ['ستارة','Curtain'],['سجادة','Carpet'],['مصباح','Lamp'],['ساعة حائط','Wall Clock'],
+      ['مفتاح','Key'],['مظلة','Umbrella'],['فرشاة أسنان','Toothbrush'],['منشفة','Towel'],
+      ['وسادة','Pillow'],['نافذة','Window'],['درج','Stairs'],['باب','Door'],['مقص','Scissors']
+    ]}
+  ];
+
+  /* ---------------- strings ---------------- */
+  const STR = {
+    ar: {
+      brand:'المحتال',
+      setupLead:'أضف أسماء اللاعبين، ثلاثة على الأقل. الجهاز يمر على الجميع، وكل واحد يرى الكلمة السرية إلا المحتال.',
+      addPlayer:'+ إضافة لاعب',
+      secSettings:'الإعدادات',
+      impLabel:'عدد المحتالين',
+      timerLabel:'مدة النقاش',
+      timerOff:'بدون',
+      secCats:'الفئات',
+      startGame:'ابدأ اللعبة',
+      warnMin:'تحتاج ثلاثة لاعبين على الأقل.',
+      warnCat:'اختر فئة واحدة على الأقل.',
+      warnImp:'محتالان يحتاجان سبعة لاعبين أو أكثر.',
+      passTo:'مرر الجهاز إلى',
+      passHint:'لا تضغط إلا إذا كان الاسم اسمك.',
+      imPrefix:'أنا ',
+      hideAndPass:'تم، أخفِ ومرر',
+      youAre:'دورك يا',
+      catLabel:'الفئة',
+      imposterTitle:'أنت المحتال',
+      imposterSub:'لا تعرف الكلمة. استمع جيداً، جاوب بغموض، ولا تدع أحداً يكتشفك.',
+      starterKicker:'يبدأ السؤال',
+      starterHint:'اسأل أي لاعب سؤالاً عن الكلمة، ثم هو يسأل غيره. ضعوا الجهاز جانباً.',
+      beginRound:'ابدأ الجولة',
+      playKicker:'الجولة جارية',
+      playHintTimer:'تناقشوا وصوتوا بينكم. اضغطوا الزر عندما تقررون.',
+      playHintNoTimer:'لا وقت محدد. اضغطوا الزر عندما تقررون.',
+      timeUp:'انتهى الوقت',
+      revealImposter:'كشف المحتال',
+      confirmReveal:'هل تريد كشف المحتال وإنهاء الجولة؟',
+      yesReveal:'نعم، اكشف',
+      confirmExit:'إنهاء الجولة والرجوع إلى اللاعبين؟',
+      yesExit:'نعم، ارجع',
+      cancel:'رجوع',
+      theImposterWas:'المحتال كان',
+      theImpostersWere:'المحتالان كانا',
+      theWordWas:'الكلمة السرية',
+      playAgain:'جولة جديدة',
+      changePlayers:'تعديل اللاعبين',
+      defPlayer:'لاعب',
+      andJoin:' و ',
+      stepOf:(a,b) => 'لاعب ' + a + ' من ' + b
+    },
+    en: {
+      brand:'The Imposter',
+      setupLead:'Add player names, three at minimum. The phone goes around and everyone sees the secret word except the imposter.',
+      addPlayer:'+ Add player',
+      secSettings:'Settings',
+      impLabel:'Imposters',
+      timerLabel:'Discussion time',
+      timerOff:'Off',
+      secCats:'Categories',
+      startGame:'Start game',
+      warnMin:'You need at least three players.',
+      warnCat:'Pick at least one category.',
+      warnImp:'Two imposters need seven players or more.',
+      passTo:'Pass the phone to',
+      passHint:'Only tap if this is your name.',
+      imPrefix:"I'm ",
+      hideAndPass:'Got it, hide and pass',
+      youAre:'Your turn,',
+      catLabel:'Category',
+      imposterTitle:'You are the imposter',
+      imposterSub:'You do not know the word. Listen closely, answer vaguely, and do not get caught.',
+      starterKicker:'First to ask',
+      starterHint:'Ask any player a question about the word, then they ask someone else. Put the phone down.',
+      beginRound:'Begin round',
+      playKicker:'Round in progress',
+      playHintTimer:'Talk it out and vote among yourselves. Tap the button when you decide.',
+      playHintNoTimer:'No time limit. Tap the button when you decide.',
+      timeUp:"Time is up",
+      revealImposter:'Reveal the imposter',
+      confirmReveal:'Reveal the imposter and end the round?',
+      yesReveal:'Yes, reveal',
+      confirmExit:'End the round and go back to players?',
+      yesExit:'Yes, go back',
+      cancel:'Back',
+      theImposterWas:'The imposter was',
+      theImpostersWere:'The imposters were',
+      theWordWas:'The secret word',
+      playAgain:'New round',
+      changePlayers:'Edit players',
+      defPlayer:'Player',
+      andJoin:' & ',
+      stepOf:(a,b) => 'Player ' + a + ' of ' + b
+    }
+  };
+
+  /* ---------------- state ---------------- */
+  const KEY = 'almohtal.v1';
+  const MIN_PLAYERS = 3, MAX_PLAYERS = 12, TWO_IMP_MIN = 7;
+
+  const state = {
+    lang:'ar',
+    players:['', '', ''],
+    imposters:1,
+    timerMin:3,
+    cats:CATEGORIES.map(c => c.id),
+    // round data
+    roles:[], word:null, cat:null, idx:0, starter:0
+  };
+
+  const t = k => STR[state.lang][k];
+  const $ = id => document.getElementById(id);
+
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (!d) return;
+      if (d.lang === 'ar' || d.lang === 'en') state.lang = d.lang;
+      if (Array.isArray(d.players) && d.players.length >= MIN_PLAYERS)
+        state.players = d.players.slice(0, MAX_PLAYERS).map(String);
+      if (d.imposters === 1 || d.imposters === 2) state.imposters = d.imposters;
+      if ([0, 2, 3, 5].indexOf(d.timerMin) >= 0) state.timerMin = d.timerMin;
+      if (Array.isArray(d.cats)) {
+        const valid = d.cats.filter(id => CATEGORIES.some(c => c.id === id));
+        if (valid.length) state.cats = valid;
+      }
+    } catch (e) {}
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        lang:state.lang, players:state.players,
+        imposters:state.imposters, timerMin:state.timerMin, cats:state.cats
+      }));
+    } catch (e) {}
+  }
+
+  /* ---------------- helpers ---------------- */
+  function rand(n) {
+    if (window.crypto && window.crypto.getRandomValues) {
+      const a = new Uint32Array(1);
+      // reject the tail so the modulo stays uniform
+      const limit = Math.floor(0x100000000 / n) * n;
+      do { window.crypto.getRandomValues(a); } while (a[0] >= limit);
+      return a[0] % n;
+    }
+    return Math.floor(Math.random() * n);
+  }
+
+  function pickDistinct(count, n) {
+    const pool = [];
+    for (let i = 0; i < n; i++) pool.push(i);
+    const out = [];
+    for (let i = 0; i < count && pool.length; i++) out.push(pool.splice(rand(pool.length), 1)[0]);
+    return out;
+  }
+
+  function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+
+  function nameOf(i) {
+    const raw = (state.players[i] || '').trim();
+    return raw || (t('defPlayer') + ' ' + (i + 1));
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+    $(id).classList.add('on');
+  }
+
+  /* ---------------- language ---------------- */
+  function applyLang() {
+    document.documentElement.lang = state.lang;
+    document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+    document.title = t('brand');
+    $('brandTitle').textContent = t('brand');
+    $('langBtn').textContent = state.lang === 'ar' ? 'EN' : 'ع';
+    document.querySelectorAll('[data-t]').forEach(el => {
+      const v = STR[state.lang][el.getAttribute('data-t')];
+      if (typeof v === 'string') el.textContent = v;
+    });
+    renderPlayers();
+    renderCats();
+    renderSegs();
+    validate();
+  }
+
+  /* ---------------- setup rendering ---------------- */
+  function renderPlayers() {
+    const list = $('playerList');
+    list.innerHTML = '';
+    state.players.forEach((val, i) => {
+      const row = document.createElement('div');
+      row.className = 'prow';
+
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = i + 1;
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.value = val;
+      inp.maxLength = 16;
+      inp.autocomplete = 'off';
+      inp.placeholder = t('defPlayer') + ' ' + (i + 1);
+      inp.addEventListener('input', () => { state.players[i] = inp.value; save(); });
+
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '×';
+      del.disabled = state.players.length <= MIN_PLAYERS;
+      del.addEventListener('click', () => {
+        if (state.players.length <= MIN_PLAYERS) return;
+        state.players.splice(i, 1);
+        save(); renderPlayers(); renderSegs(); validate();
+      });
+
+      row.appendChild(num); row.appendChild(inp); row.appendChild(del);
+      list.appendChild(row);
+    });
+    $('addBtn').disabled = state.players.length >= MAX_PLAYERS;
+  }
+
+  function renderCats() {
+    const box = $('catList');
+    box.innerHTML = '';
+    CATEGORIES.forEach(c => {
+      const b = document.createElement('button');
+      b.textContent = c[state.lang];
+      if (state.cats.indexOf(c.id) >= 0) b.classList.add('on');
+      b.addEventListener('click', () => {
+        const at = state.cats.indexOf(c.id);
+        if (at >= 0) state.cats.splice(at, 1); else state.cats.push(c.id);
+        b.classList.toggle('on');
+        save(); validate();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function renderSegs() {
+    const twoOk = state.players.length >= TWO_IMP_MIN;
+    if (!twoOk) state.imposters = 1;
+    $('impSeg').querySelectorAll('button').forEach(b => {
+      const v = +b.dataset.v;
+      b.disabled = (v === 2 && !twoOk);
+      b.classList.toggle('on', v === state.imposters);
+    });
+    $('timerSeg').querySelectorAll('button').forEach(b => {
+      b.classList.toggle('on', +b.dataset.v === state.timerMin);
+    });
+  }
+
+  function validate() {
+    const warn = [];
+    if (state.players.length < MIN_PLAYERS) warn.push(t('warnMin'));
+    if (state.cats.length === 0) warn.push(t('warnCat'));
+    if (state.imposters === 2 && state.players.length < TWO_IMP_MIN) warn.push(t('warnImp'));
+    $('setupWarn').textContent = warn.join(' ');
+    $('startBtn').disabled = warn.length > 0;
+  }
+
+  /* ---------------- round flow ---------------- */
+  function deal() {
+    const pool = CATEGORIES.filter(c => state.cats.indexOf(c.id) >= 0);
+    state.cat = pool[rand(pool.length)];
+    state.word = state.cat.words[rand(state.cat.words.length)];
+
+    const n = state.players.length;
+    // never leave fewer than two players who know the word
+    const k = Math.max(1, Math.min(state.imposters, n - 2));
+    state.roles = new Array(n).fill(false);
+    pickDistinct(k, n).forEach(i => { state.roles[i] = true; });
+
+    state.starter = rand(n);
+    state.idx = 0;
+  }
+
+  function showPass() {
+    $('passStep').textContent = t('stepOf')(state.idx + 1, state.players.length);
+    $('passName').textContent = nameOf(state.idx);
+    $('imBtn').textContent = t('imPrefix') + nameOf(state.idx);
+    show('scr-pass');
+  }
+
+  function showCard() {
+    $('cardStep').textContent = t('stepOf')(state.idx + 1, state.players.length);
+    $('cardOwner').textContent = t('youAre') + ' ' + nameOf(state.idx);
+
+    const card = $('roleCard');
+    card.innerHTML = '';
+    if (state.roles[state.idx]) {
+      card.classList.add('imposter');
+      const a = document.createElement('div');
+      a.className = 'imp';
+      a.textContent = t('imposterTitle');
+      const b = document.createElement('div');
+      b.className = 'impsub';
+      b.textContent = t('imposterSub');
+      card.appendChild(a); card.appendChild(b);
+      buzz([60, 60, 60]);
+    } else {
+      card.classList.remove('imposter');
+      const a = document.createElement('div');
+      a.className = 'catlbl';
+      a.textContent = t('catLabel') + ': ' + state.cat[state.lang];
+      const b = document.createElement('div');
+      b.className = 'word';
+      b.textContent = state.word[state.lang === 'ar' ? 0 : 1];
+      card.appendChild(a); card.appendChild(b);
+      buzz(40);
+    }
+    show('scr-card');
+  }
+
+  function showStarter() {
+    $('starterName').textContent = nameOf(state.starter);
+    show('scr-starter');
+  }
+
+  /* ---------------- timer ---------------- */
+  let tick = null, endAt = 0;
+
+  function fmt(s) {
+    if (s < 0) s = 0;
+    const m = Math.floor(s / 60), r = s % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+  function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
+
+  function startPlay() {
+    const el = $('timerEl');
+    el.classList.remove('done');
+    stopTimer();
+    if (state.timerMin > 0) {
+      $('playHint').textContent = t('playHintTimer');
+      const total = state.timerMin * 60;
+      endAt = Date.now() + total * 1000;
+      el.textContent = fmt(total);
+      tick = setInterval(() => {
+        const left = Math.round((endAt - Date.now()) / 1000);
+        if (left <= 0) {
+          stopTimer();
+          el.textContent = t('timeUp');
+          el.classList.add('done');
+          buzz([200, 100, 200]);
+        } else {
+          el.textContent = fmt(left);
+        }
+      }, 250);
+    } else {
+      $('playHint').textContent = t('playHintNoTimer');
+      el.textContent = '∞';
+    }
+    show('scr-play');
+  }
+
+  function doReveal() {
+    stopTimer();
+    const names = [];
+    state.roles.forEach((isImp, i) => { if (isImp) names.push(nameOf(i)); });
+    $('impPanelLbl').textContent = names.length > 1 ? t('theImpostersWere') : t('theImposterWas');
+    $('impPanelVal').textContent = names.join(t('andJoin'));
+    $('wordPanelVal').textContent = state.word[state.lang === 'ar' ? 0 : 1];
+    buzz([80, 60, 80, 60, 160]);
+    show('scr-reveal');
+  }
+
+  /* ---------------- wiring ---------------- */
+  $('langBtn').addEventListener('click', () => {
+    state.lang = state.lang === 'ar' ? 'en' : 'ar';
+    save(); applyLang();
+  });
+
+  $('addBtn').addEventListener('click', () => {
+    if (state.players.length >= MAX_PLAYERS) return;
+    state.players.push('');
+    save(); renderPlayers(); renderSegs(); validate();
+  });
+
+  $('impSeg').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.disabled) return;
+    state.imposters = +b.dataset.v;
+    save(); renderSegs(); validate();
+  });
+
+  $('timerSeg').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    state.timerMin = +b.dataset.v;
+    save(); renderSegs();
+  });
+
+  $('startBtn').addEventListener('click', () => {
+    if ($('startBtn').disabled) return;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    deal(); showPass();
+  });
+
+  $('imBtn').addEventListener('click', showCard);
+
+  $('doneBtn').addEventListener('click', () => {
+    state.idx++;
+    if (state.idx >= state.players.length) showStarter(); else showPass();
+  });
+
+  $('playBtn').addEventListener('click', startPlay);
+
+  let pendingYes = null;
+
+  function askConfirm(msgKey, yesKey, onYes) {
+    $('sheetMsg').textContent = t(msgKey);
+    $('confirmYes').textContent = t(yesKey);
+    pendingYes = onYes;
+    $('confirmSheet').classList.add('on');
+  }
+  function closeSheet() { $('confirmSheet').classList.remove('on'); pendingYes = null; }
+
+  $('confirmNo').addEventListener('click', closeSheet);
+  $('confirmYes').addEventListener('click', () => {
+    const fn = pendingYes;
+    closeSheet();
+    if (fn) fn();
+  });
+
+  function backToSetup() { stopTimer(); show('scr-setup'); }
+
+  $('revealBtn').addEventListener('click', () => askConfirm('confirmReveal', 'yesReveal', doReveal));
+  $('exitBtn').addEventListener('click', () => askConfirm('confirmExit', 'yesExit', backToSetup));
+
+  $('againBtn').addEventListener('click', () => { deal(); showPass(); });
+  $('backBtn').addEventListener('click', backToSetup);
+
+  /* ---------------- boot ---------------- */
+  load();
+  applyLang();
+  show('scr-setup');
+})();
+</script>
+</body>
+</html>
