@@ -228,6 +228,9 @@
   .flip-in { position:relative; width:100%; height:100%; transform-style:preserve-3d;
              transition:transform .62s cubic-bezier(.4,.02,.2,1); }
   .flip.flipped .flip-in { transform:rotateY(180deg); }
+  /* resetting for the next player must be instant, or the card un-flips over 620ms
+     and shows the previous face on the way back */
+  .flip.noanim .flip-in { transition:none !important; }
   .flip:active .flip-in { transform:scale(.97); }
   .flip.flipped:active .flip-in { transform:rotateY(180deg) scale(.97); }
   .face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
@@ -349,16 +352,49 @@
 
   /* ---------------- imposter reveal ---------------- */
   .panel { position:relative; }
-  .panel.red.stamp { animation:stampIn .52s cubic-bezier(.2,1.5,.35,1) both; }
+  .panel.red.stamp { animation:stampIn .6s cubic-bezier(.18,1.6,.32,1) both; }
   @keyframes stampIn {
-    0%   { opacity:0; transform:scale(1.32) rotate(-2.5deg); }
-    60%  { opacity:1; transform:scale(.97) rotate(.6deg); }
+    0%   { opacity:0; transform:scale(1.7) rotate(-4deg); }
+    55%  { opacity:1; transform:scale(.94) rotate(1.2deg); }
+    75%  { transform:scale(1.03) rotate(-.5deg); }
     100% { opacity:1; transform:scale(1) rotate(0deg); }
   }
-  .ring { position:absolute; inset:-3px; border-radius:22px; border:2.5px solid var(--danger);
+  .ring { position:absolute; inset:-3px; border-radius:22px; border:3px solid var(--danger);
           opacity:0; pointer-events:none; }
-  .panel.red.stamp .ring { animation:ringOut .62s .1s cubic-bezier(.2,.8,.3,1) forwards; }
-  @keyframes ringOut { 0% { opacity:.85; transform:scale(1); } 100% { opacity:0; transform:scale(1.16); } }
+  .panel.red.stamp .ring { animation:ringOut .75s .12s cubic-bezier(.15,.75,.3,1) forwards; }
+  @keyframes ringOut { 0% { opacity:.95; transform:scale(1); } 100% { opacity:0; transform:scale(1.3); } }
+
+  /* the whole reveal jolts */
+  #scr-reveal .mid.shakefx { animation:shake .55s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes shake {
+    0%,100% { transform:translate(0,0) rotate(0deg); }
+    8%   { transform:translate(-11px,4px)  rotate(-.7deg); }
+    18%  { transform:translate(10px,-6px)  rotate(.6deg); }
+    28%  { transform:translate(-8px,-3px)  rotate(-.5deg); }
+    40%  { transform:translate(7px,4px)    rotate(.4deg); }
+    52%  { transform:translate(-5px,-2px)  rotate(-.3deg); }
+    66%  { transform:translate(3px,2px)    rotate(.2deg); }
+    82%  { transform:translate(-2px,-1px)  rotate(-.1deg); }
+  }
+
+  /* red bloom over the whole screen at the moment of truth */
+  #revealFlash { position:fixed; inset:0; z-index:45; pointer-events:none; opacity:0;
+                 background:radial-gradient(circle at 50% 42%,
+                            rgba(255,51,85,.55) 0%, rgba(255,51,85,.22) 42%, rgba(255,51,85,0) 72%); }
+  #revealFlash.run { animation:flashOut .72s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes flashOut { 0% { opacity:0; } 12% { opacity:1; } 100% { opacity:0; } }
+
+  /* the culprits, shown as people rather than a line of text */
+  .impwho { display:flex; flex-direction:column; gap:10px; margin-top:2px; }
+  .who { display:flex; align-items:center; gap:12px;
+         animation:whoIn .42s cubic-bezier(.2,1.4,.4,1) both; }
+  .who:nth-child(1) { animation-delay:.3s; }
+  .who:nth-child(2) { animation-delay:.45s; }
+  @keyframes whoIn { from { opacity:0; transform:translateY(10px) scale(.85); } }
+  .wav { flex:0 0 46px; height:46px; border-radius:16px; display:flex; align-items:center;
+         justify-content:center; font-size:21px; font-weight:900; color:#fff;
+         border:2.5px solid rgba(255,255,255,.92); box-shadow:0 3px 10px rgba(0,0,0,.25); }
+  .wnm { font-size:27px; font-weight:900; color:#fff; line-height:1.2; word-break:break-word; }
 
   /* held for one frame while the palette swaps, so no element animates between themes */
   :root.theming *, :root.theming *::after, :root.theming *::before { transition:none !important; }
@@ -592,7 +628,7 @@
       <div class="panel red" id="impPanel">
         <span class="ring"></span>
         <div class="plbl" id="impPanelLbl"></div>
-        <div class="pval" id="impPanelVal"></div>
+        <div class="impwho" id="impWho"></div>
       </div>
       <div class="panel">
         <div class="plbl" data-t="theWordWas"></div>
@@ -606,6 +642,8 @@
     <button id="backBtn" class="quiet" data-t="changePlayers"></button>
   </footer>
 </section>
+
+<div id="revealFlash"></div>
 
 <!-- ================= DEALING ================= -->
 <div class="deal" id="dealFx">
@@ -1225,7 +1263,10 @@ if ('serviceWorker' in navigator) {
     $('cardStep').textContent = t('stepOf')(state.idx + 1, state.players.length);
 
     const flip = $('flip');
+    flip.classList.add('noanim');          // snap face-down, never animate the un-flip
     flip.classList.remove('flipped');
+    void flip.offsetWidth;                 // commit it before the transition is restored
+    flip.classList.remove('noanim');
     $('doneBtn').classList.add('veil');
 
     const c = colorOf(state.idx);
@@ -1404,22 +1445,44 @@ if ('serviceWorker' in navigator) {
     setTimeout(() => fx.classList.remove('run'), 920);   // then it cross-fades away
   }
 
+  // the moment of truth: flash, jolt, then stamp the culprits in
   function stampReveal() {
     const p = $('impPanel');
-    p.classList.remove('stamp');
-    void p.offsetWidth;
-    p.classList.add('stamp');
+    const mid = document.querySelector('#scr-reveal .mid');
+    const flash = $('revealFlash');
+    [[p, 'stamp'], [mid, 'shakefx'], [flash, 'run']].forEach(([el, cls]) => {
+      el.classList.remove(cls);
+      void el.offsetWidth;
+      if (!reduceMotion) el.classList.add(cls);
+    });
+    if (reduceMotion) p.classList.add('stamp');   // keep the entrance, drop the motion
   }
 
   function doReveal() {
     stopTimer();
     keepAwake(false);
-    const names = impostorIndexes().map(nameOf);
-    $('impPanelLbl').textContent = names.length > 1 ? t('theImpostersWere') : t('theImposterWas');
-    $('impPanelVal').textContent = names.join(t('andJoin'));
+    const idxs = impostorIndexes();
+    $('impPanelLbl').textContent = idxs.length > 1 ? t('theImpostersWere') : t('theImposterWas');
+
+    const who = $('impWho');
+    who.innerHTML = '';
+    idxs.forEach(i => {
+      const row = document.createElement('div');
+      row.className = 'who';
+      const av = document.createElement('span');
+      av.className = 'wav';
+      av.style.background = 'linear-gradient(150deg, ' + colorOf(i) + ', ' + shade(colorOf(i), -25) + ')';
+      av.textContent = nameOf(i).charAt(0);
+      const nm = document.createElement('span');
+      nm.className = 'wnm';
+      nm.textContent = nameOf(i);
+      row.appendChild(av); row.appendChild(nm);
+      who.appendChild(row);
+    });
+
     $('wordPanelVal').textContent = wordMain();
     $('wordPanelSub').textContent = wordSub();
-    buzz([80, 60, 80, 60, 160]);
+    buzz([30, 40, 30, 40, 60, 50, 260]);
     show('scr-reveal', 1);
     stampReveal();
   }

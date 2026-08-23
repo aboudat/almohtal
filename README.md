@@ -52,6 +52,20 @@ suppresses every transition for one frame while the palette swaps.
 Content is capped at `--maxw` and centred, so the game stays a readable column on a tablet or a
 desktop browser rather than stretching edge to edge.
 
+Three set pieces carry the personality. The splash draws the mask on as a stroke, fills it, and
+raises the bilingual lockup with the `by Aboudat` credit; it auto-advances at 2.35s or on a tap.
+Starting a round fans five cards out and cross-fades into the first player. The reveal is the
+loudest moment: a red bloom over the screen, a jolt, and the culprits stamped in with their
+avatars. All three collapse under `prefers-reduced-motion`.
+
+Two traps worth remembering, both of which shipped invisible bugs before the tests caught them:
+
+- `@keyframes rise` only declares a `from` state, so its implicit `to` state is the element's own
+  style. Never also write `opacity: 0` on an element that uses it, or it animates 0 to 0.
+- Resetting the role card for the next player must be instant. Removing `.flipped` normally
+  animates the un-flip over 620ms, which shows the previous player's face on the way back. The
+  `.noanim` class exists solely to suppress that.
+
 ## Files
 
 | File | Purpose |
