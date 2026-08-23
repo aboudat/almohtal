@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" id="themeColor">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -18,20 +18,47 @@
   :root {
     --bg:#f4f5fa;
     --surface:#ffffff;
+    --sunken:#f0f0f6;
     --ink:#14121f;
     --dim:#75748e;
+    --faint:#b9b9cb;
     --line:#e5e6f0;
+    --disabled:#d9dae6;
     --brand:#6d3bf5;
     --brand-2:#8b5cff;
     --brand-soft:#f0eaff;
     --danger:#ff3355;
     --danger-2:#ff5f7a;
-    --danger-soft:#ffedf0;
+    --scrim:rgba(20,18,31,.42);
+    --sh-sm: 0 1px 2px rgba(20,18,31,.06), 0 3px 10px rgba(20,18,31,.05);
+    --sh-md: 0 2px 6px rgba(20,18,31,.07), 0 14px 34px rgba(20,18,31,.10);
+    --sh-brand: 0 6px 18px rgba(109,59,245,.34);
+    --sh-danger: 0 6px 18px rgba(255,51,85,.30);
+
+    --maxw: 480px;
     --sx: 100%;
     --safe-b: env(safe-area-inset-bottom, 0px);
     --safe-t: env(safe-area-inset-top, 0px);
-    --sh-sm: 0 1px 2px rgba(20,18,31,.06), 0 3px 10px rgba(20,18,31,.05);
-    --sh-md: 0 2px 6px rgba(20,18,31,.07), 0 14px 34px rgba(20,18,31,.10);
+  }
+  :root[data-theme="dark"] {
+    --bg:#0f0f16;
+    --surface:#1a1a26;
+    --sunken:#23232f;
+    --ink:#f1f0f8;
+    --dim:#9b99b4;
+    --faint:#5d5b78;
+    --line:#2b2b3b;
+    --disabled:#33334a;
+    --brand:#8b5cff;
+    --brand-2:#a682ff;
+    --brand-soft:#251e42;
+    --danger:#ff4d6a;
+    --danger-2:#ff7189;
+    --scrim:rgba(0,0,0,.62);
+    --sh-sm: 0 1px 2px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.3);
+    --sh-md: 0 2px 6px rgba(0,0,0,.45), 0 14px 34px rgba(0,0,0,.45);
+    --sh-brand: 0 6px 18px rgba(139,92,255,.34);
+    --sh-danger: 0 6px 18px rgba(255,77,106,.30);
   }
   [dir="rtl"] { --sx: -100%; }
 
@@ -39,6 +66,8 @@
     width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--ink);
     font-family: system-ui, 'Segoe UI', 'Noto Sans Arabic', Tahoma, sans-serif;
     user-select:none; -webkit-user-select:none;
+    /* no colour transition here: .screen repaints its background instantly, so a slow
+       body colour fade leaves dark text on a dark ground for a frame or two */
   }
 
   /* ---------------- screens and transitions ---------------- */
@@ -53,10 +82,19 @@
   .screen.out-f{ visibility:visible; opacity:0; transform:translateX(calc(var(--sx) * -.26)) scale(.97); z-index:1; }
   .screen.out-b{ visibility:visible; opacity:0; transform:translateX(calc(var(--sx) * .26)) scale(.97); z-index:1; }
 
+  /* everything sits in a centred column so wide screens stay readable */
+  .top, .scroll, .bot, .mid, .hdr { width:100%; max-width:var(--maxw); margin-inline:auto; }
+
   /* ---------------- chrome ---------------- */
   .top { display:flex; align-items:center; gap:10px; flex:0 0 auto;
          padding:calc(14px + var(--safe-t)) 16px 8px; }
   .top h2 { font-size:19px; font-weight:800; flex:1 1 auto; }
+  .hdr { display:flex; align-items:center; justify-content:space-between; flex:0 0 auto;
+         padding:calc(16px + var(--safe-t)) 18px 0; min-height:44px; }
+  .step { font-size:14px; color:var(--dim); font-weight:800; }
+  .exit { background:none; border:none; color:var(--faint); font-family:inherit; font-size:28px;
+          line-height:1; padding:4px 10px; cursor:pointer; }
+  .exit:active { color:var(--danger); }
   .icon-btn { flex:0 0 auto; width:42px; height:42px; border-radius:14px; background:var(--surface);
               border:1px solid var(--line); color:var(--ink); font-family:inherit; font-size:19px;
               font-weight:700; cursor:pointer; box-shadow:var(--sh-sm); line-height:1; }
@@ -75,11 +113,11 @@
     border:none; border-radius:18px; cursor:pointer; transition:transform .12s ease, opacity .2s ease;
   }
   .primary { background:linear-gradient(135deg, var(--brand-2), var(--brand)); color:#fff;
-             box-shadow:0 6px 18px rgba(109,59,245,.34); }
+             box-shadow:var(--sh-brand); }
   .primary:active { transform:scale(.975); }
-  .primary:disabled { background:#d9dae6; color:#fff; box-shadow:none; transform:none; }
+  .primary:disabled { background:var(--disabled); color:var(--surface); box-shadow:none; transform:none; }
   .danger { background:linear-gradient(135deg, var(--danger-2), var(--danger)); color:#fff;
-            box-shadow:0 6px 18px rgba(255,51,85,.30); }
+            box-shadow:var(--sh-danger); }
   .danger:active { transform:scale(.975); }
   .quiet { background:var(--surface); border:1px solid var(--line); color:var(--dim);
            font-size:17px; padding:16px; box-shadow:var(--sh-sm); }
@@ -99,8 +137,9 @@
                 animation:rise .45s .08s cubic-bezier(.2,.9,.3,1) both; }
   .home-tag { font-size:17px; color:var(--dim); font-weight:600; max-width:280px; line-height:1.6;
               animation:rise .45s .16s cubic-bezier(.2,.9,.3,1) both; }
-  .home .bot, #scr-home .bot { animation:rise .45s .24s cubic-bezier(.2,.9,.3,1) both; }
-  .lang-abs { position:absolute; top:calc(14px + var(--safe-t)); inset-inline-end:16px; }
+  #scr-home .bot { animation:rise .45s .24s cubic-bezier(.2,.9,.3,1) both; }
+  .home-tools { position:absolute; top:calc(14px + var(--safe-t)); inset-inline-end:16px;
+                display:flex; gap:8px; }
   @keyframes pop  { from { opacity:0; transform:scale(.7) rotate(-8deg); } }
   @keyframes rise { from { opacity:0; transform:translateY(14px); } }
 
@@ -122,8 +161,8 @@
     outline:none; box-shadow:var(--sh-sm); transition:border-color .18s ease;
   }
   .prow input:focus { border-color:var(--brand); }
-  .prow input::placeholder { color:#b6b6c8; font-weight:500; }
-  .prow .del { flex:0 0 40px; height:44px; background:none; border:none; color:#c3c3d4;
+  .prow input::placeholder { color:var(--faint); font-weight:500; }
+  .prow .del { flex:0 0 40px; height:44px; background:none; border:none; color:var(--faint);
                font-size:24px; cursor:pointer; line-height:1; font-family:inherit; }
   .prow .del:active { color:var(--danger); }
   .prow .del:disabled { opacity:.35; }
@@ -137,39 +176,52 @@
   .row { display:flex; align-items:center; justify-content:space-between; gap:12px;
          background:var(--surface); border:1px solid var(--line); border-radius:16px;
          padding:12px 14px; margin-bottom:10px; box-shadow:var(--sh-sm); }
-  .row > span { font-size:16px; font-weight:700; }
-  .seg { display:flex; gap:5px; flex:0 0 auto; background:#f0f0f6; padding:4px; border-radius:12px; }
+  .row.off { opacity:.45; }
+  .rowtext { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .rowtext > span { font-size:16px; font-weight:700; }
+  .rowtext > small { font-size:12.5px; font-weight:600; color:var(--dim); line-height:1.4; }
+  .seg { display:flex; gap:5px; flex:0 0 auto; background:var(--sunken); padding:4px; border-radius:12px; }
   .seg button { background:none; border:none; color:var(--dim); font-family:inherit;
                 font-size:15px; font-weight:800; padding:8px 12px; border-radius:9px; cursor:pointer;
                 min-width:42px; transition:background .16s ease, color .16s ease; }
   .seg button.on { background:var(--surface); color:var(--brand); box-shadow:var(--sh-sm); }
   .seg button:disabled { opacity:.35; }
 
+  /* switch */
+  .sw { flex:0 0 auto; width:54px; height:32px; border-radius:999px; background:var(--sunken);
+        border:none; cursor:pointer; position:relative; transition:background .2s ease; }
+  .sw::after { content:''; position:absolute; top:4px; inset-inline-start:4px; width:24px; height:24px;
+               border-radius:50%; background:var(--surface); box-shadow:var(--sh-sm);
+               transition:transform .2s cubic-bezier(.3,.9,.3,1); }
+  .sw.on { background:var(--brand); }
+  .sw.on::after { transform:translateX(calc(22px * var(--dirmul, 1))); }
+  [dir="rtl"] .sw { --dirmul: -1; }
+  .sw:disabled { opacity:.4; cursor:default; }
+
   .cats { display:flex; flex-wrap:wrap; gap:8px; }
   .cats button { background:var(--surface); border:1px solid var(--line); color:var(--dim);
                  font-family:inherit; font-size:15px; font-weight:700; padding:11px 15px;
                  border-radius:999px; cursor:pointer; box-shadow:var(--sh-sm);
                  transition:transform .12s ease, background .16s ease, color .16s ease, border-color .16s ease; }
-  .cats button.on { background:var(--brand); border-color:var(--brand); color:#fff; box-shadow:0 4px 12px rgba(109,59,245,.26); }
+  .cats button.on { background:var(--brand); border-color:var(--brand); color:#fff; box-shadow:var(--sh-brand); }
   .cats button:active { transform:scale(.95); }
+  .cats button i { font-style:normal; opacity:.6; font-size:13px; margin-inline-start:5px; }
 
   .warn { color:var(--danger); font-size:14px; font-weight:700; margin-top:14px; min-height:20px; line-height:1.5; }
 
   /* ---------------- pass ---------------- */
   .mid { flex:1 1 auto; display:flex; flex-direction:column; align-items:center;
          justify-content:center; text-align:center; padding:20px; gap:14px; }
-  .step { position:absolute; top:calc(18px + var(--safe-t)); inset-inline-start:20px;
-          font-size:14px; color:var(--dim); font-weight:800; }
-  .exit { position:absolute; top:calc(10px + var(--safe-t)); inset-inline-end:14px;
-          background:none; border:none; color:#b9b9cb; font-family:inherit; font-size:28px;
-          line-height:1; padding:6px 12px; cursor:pointer; }
-  .exit:active { color:var(--danger); }
   .avatar { width:96px; height:96px; border-radius:34px; color:#fff; font-size:40px; font-weight:900;
             display:flex; align-items:center; justify-content:center; margin-bottom:4px;
             animation:pop .42s cubic-bezier(.2,1.3,.4,1) both; }
   .kicker { font-size:16px; color:var(--dim); font-weight:700; }
   .bigname { font-size:40px; font-weight:900; line-height:1.2; word-break:break-word; }
   .hint { font-size:15px; color:var(--dim); line-height:1.6; max-width:320px; font-weight:600; }
+  .dots { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:6px; }
+  .dots i { width:7px; height:7px; border-radius:50%; background:var(--line); transition:all .2s ease; }
+  .dots i.done { background:var(--brand); opacity:.45; }
+  .dots i.now { background:var(--brand); width:20px; border-radius:999px; }
 
   /* ---------------- flip card ---------------- */
   .flip { width:100%; max-width:330px; height:clamp(300px, 52vh, 430px); perspective:1500px; cursor:pointer; }
@@ -182,36 +234,49 @@
           border-radius:28px; display:flex; flex-direction:column; align-items:center;
           justify-content:center; text-align:center; padding:26px; gap:10px; box-shadow:var(--sh-md); }
   .face.front { transform:rotateY(180deg); }
+  .cb-mark { position:absolute; width:74%; left:13%; top:50%; transform:translateY(-56%); pointer-events:none; }
   .cb-name { font-size:26px; font-weight:900; color:#fff; }
   .cb-hint { font-size:15px; font-weight:700; color:rgba(255,255,255,.85); }
-  .cb-mark { position:absolute; width:74%; left:13%; top:50%; transform:translateY(-56%);
-             pointer-events:none; }
   .face.word { background:var(--surface); border:1px solid var(--line); }
   .catchip { font-size:14px; font-weight:800; color:var(--brand); background:var(--brand-soft);
              padding:7px 14px; border-radius:999px; }
   .theword { font-size:36px; font-weight:900; line-height:1.25; word-break:break-word; }
+  .wordsub { font-size:16px; font-weight:700; color:var(--dim); direction:ltr; margin-top:-4px; }
   .face.imp { background:linear-gradient(150deg, var(--danger-2), var(--danger)); }
   .imptitle { font-size:34px; font-weight:900; color:#fff; line-height:1.25; }
   .impsub { font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.6; }
+  .impchip { font-size:14px; font-weight:800; color:#fff; background:rgba(255,255,255,.22);
+             padding:7px 14px; border-radius:999px; }
+  .partner { background:rgba(255,255,255,.16); border-radius:14px; padding:11px 16px; }
+  .partner b { display:block; font-size:12.5px; font-weight:800; color:rgba(255,255,255,.8);
+               letter-spacing:.8px; margin-bottom:3px; }
+  .partner span { font-size:19px; font-weight:900; color:#fff; }
 
   /* ---------------- play ---------------- */
   .timer { font-size:70px; font-weight:900; font-variant-numeric:tabular-nums; letter-spacing:1px; direction:ltr; }
   .timer.done { color:var(--danger); font-size:44px; }
+  .timer.paused { opacity:.45; }
+  .tctl { display:flex; gap:10px; }
+  .tctl button { background:var(--surface); border:1px solid var(--line); color:var(--dim);
+                 font-family:inherit; font-size:14px; font-weight:800; padding:11px 18px;
+                 border-radius:999px; cursor:pointer; box-shadow:var(--sh-sm); }
+  .tctl button:active { transform:scale(.95); }
 
   /* ---------------- reveal ---------------- */
   .revealbox { width:100%; max-width:340px; display:flex; flex-direction:column; gap:14px; }
   .panel { background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:20px;
            box-shadow:var(--sh-sm); animation:rise .4s cubic-bezier(.2,.9,.3,1) both; }
   .panel.red { background:linear-gradient(150deg, var(--danger-2), var(--danger)); border:none;
-               box-shadow:0 8px 24px rgba(255,51,85,.28); }
+               box-shadow:var(--sh-danger); }
   .panel:nth-child(2) { animation-delay:.1s; }
   .plbl { font-size:13px; font-weight:800; color:var(--dim); letter-spacing:1.2px; margin-bottom:7px; }
   .panel.red .plbl { color:rgba(255,255,255,.85); }
   .pval { font-size:28px; font-weight:900; line-height:1.35; word-break:break-word; }
   .panel.red .pval { color:#fff; }
+  .psub { font-size:15px; font-weight:700; color:var(--dim); direction:ltr; margin-top:4px; }
 
   /* ---------------- sheets ---------------- */
-  .sheet { position:fixed; inset:0; background:rgba(20,18,31,.42); backdrop-filter:blur(3px);
+  .sheet { position:fixed; inset:0; background:var(--scrim); backdrop-filter:blur(3px);
            display:flex; align-items:flex-end; justify-content:center; padding:14px;
            padding-bottom:calc(14px + var(--safe-b)); z-index:50;
            opacity:0; pointer-events:none; transition:opacity .24s ease; }
@@ -229,8 +294,11 @@
                 display:flex; align-items:center; justify-content:center; }
   .stepline span { font-size:15px; font-weight:600; line-height:1.55; color:var(--ink); }
 
+  /* held for one frame while the palette swaps, so no element animates between themes */
+  :root.theming *, :root.theming *::after, :root.theming *::before { transition:none !important; }
+
   @media (prefers-reduced-motion: reduce) {
-    .screen, .flip-in, .sheet, .sheet .box { transition-duration:.01s !important; }
+    .screen, .flip-in, .sheet, .sheet .box, .sw::after { transition-duration:.01s !important; }
     .logo, .home-title, .home-tag, .avatar, .panel, #scr-home .bot { animation:none !important; }
   }
 </style>
@@ -239,7 +307,10 @@
 
 <!-- ================= HOME ================= -->
 <section id="scr-home" class="screen on">
-  <button id="homeLang" class="lang lang-abs">EN</button>
+  <div class="home-tools">
+    <button id="themeBtn" class="icon-btn" aria-label="theme">🌙</button>
+    <button id="homeLang" class="lang">EN</button>
+  </div>
   <div class="home">
     <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
       <defs>
@@ -278,20 +349,47 @@
     <button id="addBtn" class="ghost" data-t="addPlayer"></button>
 
     <div class="sec"><h3 data-t="secSettings"></h3></div>
+
     <div class="row">
-      <span data-t="impLabel"></span>
+      <div class="rowtext"><span data-t="impLabel"></span></div>
       <div class="seg" id="impSeg">
         <button data-v="1">1</button>
         <button data-v="2">2</button>
       </div>
     </div>
+
+    <div class="row" id="rowPartners">
+      <div class="rowtext">
+        <span data-t="partnersLabel"></span>
+        <small data-t="partnersHelp"></small>
+      </div>
+      <button class="sw" id="swPartners" role="switch"></button>
+    </div>
+
     <div class="row">
-      <span data-t="timerLabel"></span>
+      <div class="rowtext">
+        <span data-t="hintLabel"></span>
+        <small data-t="hintHelp"></small>
+      </div>
+      <button class="sw" id="swHint" role="switch"></button>
+    </div>
+
+    <div class="row">
+      <div class="rowtext"><span data-t="timerLabel"></span></div>
       <div class="seg" id="timerSeg">
         <button data-v="0" data-t="timerOff"></button>
         <button data-v="2">2</button>
         <button data-v="3">3</button>
         <button data-v="5">5</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="rowtext"><span data-t="themeLabel"></span></div>
+      <div class="seg" id="themeSeg">
+        <button data-v="light" data-t="themeLight"></button>
+        <button data-v="dark" data-t="themeDark"></button>
+        <button data-v="auto" data-t="themeAuto"></button>
       </div>
     </div>
 
@@ -312,12 +410,15 @@
 
 <!-- ================= PASS ================= -->
 <section id="scr-pass" class="screen">
-  <div class="step" id="passStep"></div>
-  <button class="exit" id="exitBtn" aria-label="exit">×</button>
+  <header class="hdr">
+    <span class="step" id="passStep"></span>
+    <button class="exit" id="exitBtn" aria-label="exit">×</button>
+  </header>
   <div class="mid">
     <div class="avatar" id="passAvatar"></div>
     <div class="kicker" data-t="passTo"></div>
     <div class="bigname" id="passName"></div>
+    <div class="dots" id="passDots"></div>
     <div class="hint" data-t="passHint"></div>
   </div>
   <footer class="bot">
@@ -327,7 +428,7 @@
 
 <!-- ================= CARD ================= -->
 <section id="scr-card" class="screen">
-  <div class="step" id="cardStep"></div>
+  <header class="hdr"><span class="step" id="cardStep"></span></header>
   <div class="mid">
     <div class="flip" id="flip">
       <div class="flip-in">
@@ -371,8 +472,12 @@
 <!-- ================= PLAY ================= -->
 <section id="scr-play" class="screen">
   <div class="mid">
-    <div class="kicker" data-t="playKicker"></div>
+    <div class="kicker" id="roundLbl"></div>
     <div class="timer" id="timerEl">--:--</div>
+    <div class="tctl" id="tctl">
+      <button id="pauseBtn"></button>
+      <button id="addMinBtn"></button>
+    </div>
     <div class="hint" id="playHint"></div>
   </div>
   <footer class="bot">
@@ -391,6 +496,7 @@
       <div class="panel">
         <div class="plbl" data-t="theWordWas"></div>
         <div class="pval" id="wordPanelVal"></div>
+        <div class="psub" id="wordPanelSub"></div>
       </div>
     </div>
   </div>
@@ -425,7 +531,9 @@ if ('serviceWorker' in navigator) {
 (() => {
   'use strict';
 
-  /* ---------------- word bank ---------------- */
+  /* ---------------- word bank ----------------
+     latin:true marks a category of proper nouns. Those are written in Arabic the way people
+     actually say them, not literally translated, and the original name is shown underneath. */
   const CATEGORIES = [
     { id:'food', ar:'أكل وشرب', en:'Food & Drink', words:[
       ['كبسة','Kabsa'],['برجر','Burger'],['بيتزا','Pizza'],['شاورما','Shawarma'],
@@ -448,7 +556,7 @@ if ('serviceWorker' in navigator) {
       ['ملاكمة','Boxing'],['جري','Running'],['ركوب الخيل','Horse Riding'],['جولف','Golf'],
       ['كرة طائرة','Volleyball'],['تزلج','Skiing'],['دراجة هوائية','Cycling'],['كاراتيه','Karate'],
       ['مصارعة','Wrestling'],['رفع أثقال','Weightlifting'],['بلياردو','Billiards'],['شطرنج','Chess'],
-      ['تنس طاولة','Table Tennis'],['كريكت','Cricket'],['رماية','Archery'],['غوص','Diving'],
+      ['بينج بونج','Table Tennis'],['كريكت','Cricket'],['رماية','Archery'],['غوص','Diving'],
       ['تسلق الجبال','Mountain Climbing'],['سباق سيارات','Car Racing']
     ]},
     { id:'countries', ar:'دول', en:'Countries', words:[
@@ -466,29 +574,34 @@ if ('serviceWorker' in navigator) {
       ['روما','Rome'],['برشلونة','Barcelona'],['دمشق','Damascus'],['بغداد','Baghdad'],
       ['الدوحة','Doha'],['مراكش','Marrakesh'],['سيول','Seoul'],['لوس أنجلوس','Los Angeles']
     ]},
-    { id:'screen', ar:'أفلام ومسلسلات', en:'Movies & TV', words:[
-      ['تيتانيك','Titanic'],['هاري بوتر','Harry Potter'],['الأسد الملك','The Lion King'],['باتمان','Batman'],
-      ['سبايدرمان','Spider-Man'],['لعبة الحبار','Squid Game'],['أفاتار','Avatar'],['جوراسيك بارك','Jurassic Park'],
+    { id:'screen', ar:'أفلام ومسلسلات', en:'Movies & TV', latin:true, words:[
+      ['تيتانيك','Titanic'],['هاري بوتر','Harry Potter'],['الأسد الملك','The Lion King'],
+      ['باتمان','Batman'],['سبايدرمان','Spider-Man'],['آيرون مان','Iron Man'],
+      ['لعبة الحبار','Squid Game'],['أفاتار','Avatar'],['جوراسيك بارك','Jurassic Park'],
       ['فاست أند فيوريس','Fast & Furious'],['توم وجيري','Tom and Jerry'],['سبونج بوب','SpongeBob'],
-      ['ذا أوفيس','The Office'],['فريندز','Friends'],['بريكنج باد','Breaking Bad'],
-      ['ستراينجر ثينجز','Stranger Things'],['لعبة العروش','Game of Thrones'],['جوكر','Joker'],
-      ['فروزن','Frozen'],['المصفوفة','The Matrix'],['باب الحارة','Bab Al Hara']
+      ['ذا سيمبسونز','The Simpsons'],['ذا أوفيس','The Office'],['فريندز','Friends'],
+      ['بريكنج باد','Breaking Bad'],['ستراينجر ثينجز','Stranger Things'],
+      ['لعبة العروش','Game of Thrones'],['جوكر','Joker'],['فروزن','Frozen'],
+      ['ماتريكس','The Matrix'],['باب الحارة','Bab Al Hara']
     ]},
-    { id:'anime', ar:'أنمي', en:'Anime', words:[
-      ['ناروتو','Naruto'],['ون بيس','One Piece'],['دراغون بول','Dragon Ball'],['هجوم العمالقة','Attack on Titan'],
-      ['قاتل الشياطين','Demon Slayer'],['مذكرة الموت','Death Note'],['بوكيمون','Pokemon'],['ديجيمون','Digimon'],
-      ['المخطوفة','Spirited Away'],['جوجوتسو كايسن','Jujutsu Kaisen'],['بليتش','Bleach'],['هنتر × هنتر','Hunter x Hunter'],
-      ['الخيميائي المعدني','Fullmetal Alchemist'],['ماي هيرو أكاديميا','My Hero Academia'],['جاري توتورو','My Neighbor Totoro'],
-      ['المحقق كونان','Detective Conan'],['سلام دانك','Slam Dunk'],['غرندايزر','Grendizer'],
-      ['كابتن ماجد','Captain Tsubasa'],['كاوبوي بيبوب','Cowboy Bebop']
+    { id:'anime', ar:'أنمي', en:'Anime', latin:true, words:[
+      ['ناروتو','Naruto'],['ون بيس','One Piece'],['دراغون بول','Dragon Ball'],
+      ['هجوم العمالقة','Attack on Titan'],['ديمون سلاير','Demon Slayer'],['ديث نوت','Death Note'],
+      ['بوكيمون','Pokemon'],['ديجيمون','Digimon'],['سبيريتد أواي','Spirited Away'],
+      ['جوجوتسو كايسن','Jujutsu Kaisen'],['بليتش','Bleach'],['هنتر × هنتر','Hunter x Hunter'],
+      ['فل ميتال ألكيميست','Fullmetal Alchemist'],['ماي هيرو أكاديميا','My Hero Academia'],
+      ['توتورو','My Neighbor Totoro'],['المحقق كونان','Detective Conan'],['سلام دانك','Slam Dunk'],
+      ['غرندايزر','Grendizer'],['كابتن ماجد','Captain Tsubasa'],['كاوبوي بيبوب','Cowboy Bebop'],
+      ['فيري تيل','Fairy Tail'],['سولو ليفلنق','Solo Leveling']
     ]},
-    { id:'games', ar:'ألعاب فيديو', en:'Video Games', words:[
+    { id:'games', ar:'ألعاب فيديو', en:'Video Games', latin:true, words:[
       ['ماين كرافت','Minecraft'],['فورتنايت','Fortnite'],['فيفا','FIFA'],['كول أوف ديوتي','Call of Duty'],
-      ['جي تي إيه','GTA'],['ببجي','PUBG'],['سوبر ماريو','Super Mario'],['سونيك','Sonic'],
-      ['زيلدا','Zelda'],['تيتريس','Tetris'],['أنجري بيردز','Angry Birds'],['أمونج أس','Among Us'],
-      ['روبلوكس','Roblox'],['ذا لاست أوف أس','The Last of Us'],['أساسنز كريد','Assassin’s Creed'],
+      ['جي تي إيه','GTA'],['ببجي','PUBG'],['فري فاير','Free Fire'],['كلاش أوف كلانز','Clash of Clans'],
+      ['سوبر ماريو','Super Mario'],['سونيك','Sonic'],['زيلدا','Zelda'],['تيتريس','Tetris'],
+      ['أنجري بيردز','Angry Birds'],['أمونج أس','Among Us'],['روبلوكس','Roblox'],
+      ['ذا لاست أوف أس','The Last of Us'],['أساسنز كريد','Assassin’s Creed'],
       ['ريزدنت إيفل','Resident Evil'],['كاندي كراش','Candy Crush'],['ستريت فايتر','Street Fighter'],
-      ['إلدن رينغ','Elden Ring'],['ماريو كارت','Mario Kart']
+      ['إلدن رينق','Elden Ring'],['ماريو كارت','Mario Kart']
     ]},
     { id:'people', ar:'مشاهير', en:'Famous People', words:[
       ['كريستيانو رونالدو','Cristiano Ronaldo'],['ليونيل ميسي','Lionel Messi'],['محمد صلاح','Mohamed Salah'],
@@ -499,12 +612,12 @@ if ('serviceWorker' in navigator) {
       ['الخوارزمي','Al-Khwarizmi'],['مايكل جاكسون','Michael Jackson'],['تشارلي تشابلن','Charlie Chaplin'],
       ['ماري كوري','Marie Curie'],['أوبرا وينفري','Oprah Winfrey']
     ]},
-    { id:'brands', ar:'ماركات', en:'Brands', words:[
-      ['أبل','Apple'],['سامسونج','Samsung'],['نايكي','Nike'],['أديداس','Adidas'],
-      ['كوكاكولا','Coca-Cola'],['بيبسي','Pepsi'],['ماكدونالدز','McDonald’s'],['ستاربكس','Starbucks'],
-      ['تويوتا','Toyota'],['مرسيدس','Mercedes'],['بي إم دبليو','BMW'],['فيراري','Ferrari'],
-      ['أمازون','Amazon'],['جوجل','Google'],['مايكروسوفت','Microsoft'],['نتفليكس','Netflix'],
-      ['أرامكو','Aramco'],['المراعي','Almarai'],['إيكيا','IKEA'],['رولكس','Rolex']
+    { id:'brands', ar:'ماركات', en:'Brands', latin:true, words:[
+      ['أبل','Apple'],['سامسونج','Samsung'],['هواوي','Huawei'],['نايكي','Nike'],['أديداس','Adidas'],
+      ['كوكاكولا','Coca-Cola'],['بيبسي','Pepsi'],['ريد بُل','Red Bull'],['ماكدونالدز','McDonald’s'],
+      ['ستاربكس','Starbucks'],['تويوتا','Toyota'],['مرسيدس','Mercedes'],['بي إم دبليو','BMW'],
+      ['فيراري','Ferrari'],['أمازون','Amazon'],['جوجل','Google'],['مايكروسوفت','Microsoft'],
+      ['نتفلكس','Netflix'],['أرامكو','Aramco'],['المراعي','Almarai'],['إيكيا','IKEA'],['رولكس','Rolex']
     ]},
     { id:'jobs', ar:'مهن', en:'Jobs', words:[
       ['طبيب','Doctor'],['معلم','Teacher'],['مهندس','Engineer'],['طيار','Pilot'],
@@ -517,15 +630,15 @@ if ('serviceWorker' in navigator) {
     { id:'places', ar:'أماكن', en:'Places', words:[
       ['مطار','Airport'],['مستشفى','Hospital'],['مدرسة','School'],['شاطئ','Beach'],
       ['صحراء','Desert'],['غابة','Forest'],['مكتبة','Library'],['سوق','Market'],
-      ['مطعم','Restaurant'],['صالة رياضية','Gym'],['سينما','Cinema'],['حديقة حيوان','Zoo'],
+      ['مطعم','Restaurant'],['نادي رياضي','Gym'],['سينما','Cinema'],['حديقة حيوان','Zoo'],
       ['بنك','Bank'],['فندق','Hotel'],['محطة قطار','Train Station'],['ملعب','Stadium'],
       ['متحف','Museum'],['صيدلية','Pharmacy'],['مسجد','Mosque'],['جامعة','University'],
       ['مصعد','Elevator'],['قمة جبل','Mountain Top']
     ]},
     { id:'tech', ar:'تقنية', en:'Technology', words:[
-      ['هاتف ذكي','Smartphone'],['حاسوب محمول','Laptop'],['سماعات','Headphones'],['كاميرا','Camera'],
-      ['ساعة ذكية','Smartwatch'],['طائرة مسيرة','Drone'],['روبوت','Robot'],['واي فاي','Wi-Fi'],
-      ['بطارية','Battery'],['شاشة','Screen'],['لوحة مفاتيح','Keyboard'],['فأرة','Mouse'],
+      ['جوال','Smartphone'],['لابتوب','Laptop'],['سماعات','Headphones'],['كاميرا','Camera'],
+      ['ساعة ذكية','Smartwatch'],['درون','Drone'],['روبوت','Robot'],['واي فاي','Wi-Fi'],
+      ['بطارية','Battery'],['شاشة','Screen'],['كيبورد','Keyboard'],['ماوس','Mouse'],
       ['طابعة','Printer'],['قمر صناعي','Satellite'],['سيارة كهربائية','Electric Car'],
       ['ذكاء اصطناعي','Artificial Intelligence'],['يوتيوب','YouTube'],['إنستقرام','Instagram'],
       ['بلايستيشن','PlayStation'],['شاحن','Charger']
@@ -539,7 +652,7 @@ if ('serviceWorker' in navigator) {
     ]}
   ];
 
-  // deliberately no crimson in here, so a player's card back never reads as the imposter card
+  // deliberately no crimson, so a player's card back never reads as the imposter card
   const COLORS = ['#0090ff','#f76b15','#12a594','#8e4ec6','#30a46c','#e93d82',
                   '#3e63dd','#f5a524','#00a0c4','#d6409f','#5b5bd6','#946c1f'];
 
@@ -563,8 +676,16 @@ if ('serviceWorker' in navigator) {
       addPlayer:'+ إضافة لاعب',
       secSettings:'الإعدادات',
       impLabel:'عدد المحتالين',
+      partnersLabel:'المحتالون يعرفون بعضهم',
+      partnersHelp:'كل محتال يرى اسم شريكه. يحتاج محتالين اثنين.',
+      hintLabel:'تلميح للمحتال',
+      hintHelp:'المحتال يرى الفئة فقط، لا الكلمة.',
       timerLabel:'مدة النقاش',
       timerOff:'بدون',
+      themeLabel:'المظهر',
+      themeLight:'فاتح',
+      themeDark:'داكن',
+      themeAuto:'تلقائي',
       secCats:'الفئات',
       selectAll:'الكل',
       selectNone:'مسح',
@@ -579,13 +700,17 @@ if ('serviceWorker' in navigator) {
       hideAndPass:'تم، أخفِ ومرر',
       imposterTitle:'أنت المحتال',
       imposterSub:'لا تعرف الكلمة. استمع جيداً، جاوب بغموض، ولا تدع أحداً يكتشفك.',
+      partnerLbl:'شريكك في الاحتيال',
       starterKicker:'يبدأ السؤال',
       starterHint:'اسأل أي لاعب سؤالاً عن الكلمة، ثم هو يسأل غيره. ضعوا الجهاز جانباً.',
       beginRound:'ابدأ الجولة',
-      playKicker:'الجولة جارية',
+      roundNo:(n) => 'الجولة ' + n,
       playHintTimer:'تناقشوا وصوتوا بينكم. اضغطوا الزر عندما تقررون.',
       playHintNoTimer:'لا وقت محدد. اضغطوا الزر عندما تقررون.',
       timeUp:'انتهى الوقت',
+      pause:'إيقاف مؤقت',
+      resume:'متابعة',
+      addMin:'+ دقيقة',
       revealImposter:'كشف المحتال',
       confirmReveal:'هل تريد كشف المحتال وإنهاء الجولة؟',
       yesReveal:'نعم، اكشف',
@@ -620,8 +745,16 @@ if ('serviceWorker' in navigator) {
       addPlayer:'+ Add player',
       secSettings:'Settings',
       impLabel:'Imposters',
+      partnersLabel:'Imposters know each other',
+      partnersHelp:'Each imposter sees their partner’s name. Needs two imposters.',
+      hintLabel:'Hint for the imposter',
+      hintHelp:'The imposter sees the category only, never the word.',
       timerLabel:'Discussion time',
       timerOff:'Off',
+      themeLabel:'Appearance',
+      themeLight:'Light',
+      themeDark:'Dark',
+      themeAuto:'Auto',
       secCats:'Categories',
       selectAll:'All',
       selectNone:'Clear',
@@ -636,13 +769,17 @@ if ('serviceWorker' in navigator) {
       hideAndPass:'Got it, hide and pass',
       imposterTitle:'You are the imposter',
       imposterSub:'You do not know the word. Listen closely, answer vaguely, and do not get caught.',
+      partnerLbl:'Your partner in crime',
       starterKicker:'First to ask',
       starterHint:'Ask any player a question about the word, then they ask someone else. Put the phone down.',
       beginRound:'Begin round',
-      playKicker:'Round in progress',
+      roundNo:(n) => 'Round ' + n,
       playHintTimer:'Talk it out and vote among yourselves. Tap the button when you decide.',
       playHintNoTimer:'No time limit. Tap the button when you decide.',
       timeUp:'Time is up',
+      pause:'Pause',
+      resume:'Resume',
+      addMin:'+ 1 min',
       revealImposter:'Reveal the imposter',
       confirmReveal:'Reveal the imposter and end the round?',
       yesReveal:'Yes, reveal',
@@ -663,14 +800,19 @@ if ('serviceWorker' in navigator) {
 
   /* ---------------- state ---------------- */
   const KEY = 'almohtal.v1';
-  const MIN_PLAYERS = 3, MAX_PLAYERS = 12, TWO_IMP_MIN = 7;
+  const MIN_PLAYERS = 3, MAX_PLAYERS = 12, TWO_IMP_MIN = 7, RECENT_MAX = 40;
 
   const state = {
     lang:'ar',
+    theme:'auto',
     players:['', '', ''],
     imposters:1,
+    partners:true,
+    hint:false,
     timerMin:3,
     cats:CATEGORIES.map(c => c.id),
+    recent:[],
+    round:0,
     roles:[], word:null, cat:null, idx:0, starter:0
   };
 
@@ -683,22 +825,27 @@ if ('serviceWorker' in navigator) {
       const d = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!d) return;
       if (d.lang === 'ar' || d.lang === 'en') state.lang = d.lang;
+      if (['light','dark','auto'].indexOf(d.theme) >= 0) state.theme = d.theme;
       if (Array.isArray(d.players) && d.players.length >= MIN_PLAYERS)
         state.players = d.players.slice(0, MAX_PLAYERS).map(String);
       if (d.imposters === 1 || d.imposters === 2) state.imposters = d.imposters;
+      if (typeof d.partners === 'boolean') state.partners = d.partners;
+      if (typeof d.hint === 'boolean') state.hint = d.hint;
       if ([0, 2, 3, 5].indexOf(d.timerMin) >= 0) state.timerMin = d.timerMin;
       if (Array.isArray(d.cats)) {
         const valid = d.cats.filter(id => CATEGORIES.some(c => c.id === id));
         if (valid.length) state.cats = valid;
       }
+      if (Array.isArray(d.recent)) state.recent = d.recent.slice(-RECENT_MAX).map(String);
     } catch (e) {}
   }
 
   function save() {
     try {
       localStorage.setItem(KEY, JSON.stringify({
-        lang:state.lang, players:state.players,
-        imposters:state.imposters, timerMin:state.timerMin, cats:state.cats
+        lang:state.lang, theme:state.theme, players:state.players,
+        imposters:state.imposters, partners:state.partners, hint:state.hint,
+        timerMin:state.timerMin, cats:state.cats, recent:state.recent
       }));
     } catch (e) {}
   }
@@ -729,17 +876,45 @@ if ('serviceWorker' in navigator) {
     return raw || (t('defPlayer') + ' ' + (i + 1));
   }
 
-  function paintAvatar(el, i) {
-    el.style.background = 'linear-gradient(150deg, ' + colorOf(i) + ', ' + shade(colorOf(i), -22) + ')';
-    el.textContent = nameOf(i).charAt(0);
-  }
-
   // darken or lighten a hex colour by a percentage
   function shade(hex, pct) {
     const n = parseInt(hex.slice(1), 16);
     const f = (c) => Math.max(0, Math.min(255, Math.round(c + (c * pct / 100))));
     return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)]
       .map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  function paintAvatar(el, i) {
+    el.style.background = 'linear-gradient(150deg, ' + colorOf(i) + ', ' + shade(colorOf(i), -22) + ')';
+    el.textContent = nameOf(i).charAt(0);
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+  }
+
+  // the word as shown, plus the original name when the Arabic is a transliteration
+  function wordMain() { return state.word[state.lang === 'ar' ? 0 : 1]; }
+  function wordSub()  { return (state.cat.latin && state.lang === 'ar') ? state.word[1] : ''; }
+
+  /* ---------------- theme ---------------- */
+  const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  function resolvedTheme() {
+    if (state.theme === 'auto') return (darkQuery && darkQuery.matches) ? 'dark' : 'light';
+    return state.theme;
+  }
+  function applyTheme() {
+    const th = resolvedTheme();
+    const root = document.documentElement;
+    if (root.getAttribute('data-theme') !== th) {
+      root.classList.add('theming');
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theming')));
+    }
+    root.setAttribute('data-theme', th);
+    $('themeColor').setAttribute('content', th === 'dark' ? '#0f0f16' : '#ffffff');
+    $('themeBtn').textContent = th === 'dark' ? '☀️' : '🌙';
+    $('themeSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === state.theme));
+  }
+  if (darkQuery && darkQuery.addEventListener) {
+    darkQuery.addEventListener('change', () => { if (state.theme === 'auto') applyTheme(); });
   }
 
   /* ---------------- screen transitions ---------------- */
@@ -772,6 +947,7 @@ if ('serviceWorker' in navigator) {
       const v = STR[state.lang][el.getAttribute('data-t')];
       if (typeof v === 'string') el.textContent = v;
     });
+    $('addMinBtn').textContent = t('addMin');
     renderHow();
     renderPlayers();
     renderCats();
@@ -837,6 +1013,9 @@ if ('serviceWorker' in navigator) {
     CATEGORIES.forEach(c => {
       const b = document.createElement('button');
       b.textContent = c[state.lang];
+      const n = document.createElement('i');
+      n.textContent = c.words.length;
+      b.appendChild(n);
       if (state.cats.indexOf(c.id) >= 0) b.classList.add('on');
       b.addEventListener('click', () => {
         const at = state.cats.indexOf(c.id);
@@ -859,6 +1038,13 @@ if ('serviceWorker' in navigator) {
     $('timerSeg').querySelectorAll('button').forEach(b => {
       b.classList.toggle('on', +b.dataset.v === state.timerMin);
     });
+    // the partner switch only means anything with two imposters
+    const canPartner = state.imposters === 2;
+    $('swPartners').classList.toggle('on', state.partners && canPartner);
+    $('swPartners').disabled = !canPartner;
+    $('rowPartners').classList.toggle('off', !canPartner);
+    $('swHint').classList.toggle('on', state.hint);
+    applyTheme();
   }
 
   function validate() {
@@ -872,9 +1058,19 @@ if ('serviceWorker' in navigator) {
 
   /* ---------------- round flow ---------------- */
   function deal() {
-    const pool = CATEGORIES.filter(c => state.cats.indexOf(c.id) >= 0);
-    state.cat = pool[rand(pool.length)];
-    state.word = state.cat.words[rand(state.cat.words.length)];
+    // draw uniformly across every enabled word, skipping anything played recently
+    const pool = [];
+    CATEGORIES.forEach(c => {
+      if (state.cats.indexOf(c.id) < 0) return;
+      c.words.forEach(w => pool.push({ cat:c, word:w, key:c.id + '|' + w[1] }));
+    });
+    let fresh = pool.filter(p => state.recent.indexOf(p.key) < 0);
+    if (!fresh.length) { state.recent = []; fresh = pool; }
+    const pick = fresh[rand(fresh.length)];
+    state.cat = pick.cat;
+    state.word = pick.word;
+    state.recent.push(pick.key);
+    while (state.recent.length > RECENT_MAX) state.recent.shift();
 
     const n = state.players.length;
     const k = Math.max(1, Math.min(state.imposters, n - 2));   // always leave two who know the word
@@ -883,6 +1079,25 @@ if ('serviceWorker' in navigator) {
 
     state.starter = rand(n);
     state.idx = 0;
+    state.round++;
+    save();
+  }
+
+  function impostorIndexes() {
+    const out = [];
+    state.roles.forEach((v, i) => { if (v) out.push(i); });
+    return out;
+  }
+
+  function renderDots() {
+    const box = $('passDots');
+    box.innerHTML = '';
+    for (let i = 0; i < state.players.length; i++) {
+      const d = document.createElement('i');
+      if (i < state.idx) d.className = 'done';
+      else if (i === state.idx) d.className = 'now';
+      box.appendChild(d);
+    }
   }
 
   function showPass(dir) {
@@ -890,9 +1105,8 @@ if ('serviceWorker' in navigator) {
     $('passName').textContent = nameOf(state.idx);
     $('passName').style.color = colorOf(state.idx);
     $('imBtn').textContent = t('imPrefix') + nameOf(state.idx);
-    const av = $('passAvatar');
-    paintAvatar(av, state.idx);
-    av.style.animation = 'none'; void av.offsetWidth; av.style.animation = '';
+    paintAvatar($('passAvatar'), state.idx);
+    renderDots();
     show('scr-pass', dir);
   }
 
@@ -910,24 +1124,38 @@ if ('serviceWorker' in navigator) {
     const front = $('cardFront');
     front.innerHTML = '';
     front.className = 'face front';   // "front" carries the rotateY that makes the flip work
+
+    const add = (cls, text, tag) => {
+      const el = document.createElement(tag || 'div');
+      el.className = cls;
+      el.textContent = text;
+      front.appendChild(el);
+      return el;
+    };
+
     if (state.roles[state.idx]) {
       front.classList.add('imp');
-      const a = document.createElement('div');
-      a.className = 'imptitle';
-      a.textContent = t('imposterTitle');
-      const b = document.createElement('div');
-      b.className = 'impsub';
-      b.textContent = t('imposterSub');
-      front.appendChild(a); front.appendChild(b);
+      add('imptitle', t('imposterTitle'));
+      if (state.hint) add('impchip', state.cat[state.lang]);
+
+      const others = impostorIndexes().filter(i => i !== state.idx);
+      if (state.partners && others.length) {
+        const box = document.createElement('div');
+        box.className = 'partner';
+        const b = document.createElement('b');
+        b.textContent = t('partnerLbl');
+        const s = document.createElement('span');
+        s.textContent = others.map(nameOf).join(t('andJoin'));
+        box.appendChild(b); box.appendChild(s);
+        front.appendChild(box);
+      }
+      add('impsub', t('imposterSub'));
     } else {
       front.classList.add('word');
-      const a = document.createElement('div');
-      a.className = 'catchip';
-      a.textContent = state.cat[state.lang];
-      const b = document.createElement('div');
-      b.className = 'theword';
-      b.textContent = state.word[state.lang === 'ar' ? 0 : 1];
-      front.appendChild(a); front.appendChild(b);
+      add('catchip', state.cat[state.lang]);
+      add('theword', wordMain());
+      const sub = wordSub();
+      if (sub) add('wordsub', sub);
     }
     show('scr-card', 1);
   }
@@ -943,14 +1171,28 @@ if ('serviceWorker' in navigator) {
   function showStarter() {
     $('starterName').textContent = nameOf(state.starter);
     $('starterName').style.color = colorOf(state.starter);
-    const av = $('starterAvatar');
-    paintAvatar(av, state.starter);
-    av.style.animation = 'none'; void av.offsetWidth; av.style.animation = '';
+    paintAvatar($('starterAvatar'), state.starter);
     show('scr-starter', 1);
   }
 
+  /* ---------------- keep the screen awake while the phone is on the table ------------- */
+  let wakeLock = null;
+  async function keepAwake(on) {
+    try {
+      if (on) {
+        if ('wakeLock' in navigator && !wakeLock) wakeLock = await navigator.wakeLock.request('screen');
+      } else if (wakeLock) {
+        await wakeLock.release();
+        wakeLock = null;
+      }
+    } catch (e) { wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && $('scr-play').classList.contains('on')) keepAwake(true);
+  });
+
   /* ---------------- timer ---------------- */
-  let tick = null, endAt = 0;
+  let tick = null, endAt = 0, paused = false, leftPaused = 0;
 
   function fmt(s) {
     if (s < 0) s = 0;
@@ -959,40 +1201,90 @@ if ('serviceWorker' in navigator) {
   }
   function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
 
+  function runTimer() {
+    stopTimer();
+    tick = setInterval(() => {
+      const left = Math.ceil((endAt - Date.now()) / 1000);
+      const el = $('timerEl');
+      if (left <= 0) {
+        stopTimer();
+        el.textContent = t('timeUp');
+        el.classList.add('done');
+        $('tctl').classList.add('veil');
+        buzz([200, 100, 200]);
+      } else {
+        el.textContent = fmt(left);
+      }
+    }, 250);
+  }
+
+  function setPauseLabel() { $('pauseBtn').textContent = paused ? t('resume') : t('pause'); }
+
   function startPlay() {
     const el = $('timerEl');
-    el.classList.remove('done');
+    el.classList.remove('done', 'paused');
+    $('roundLbl').textContent = t('roundNo')(state.round);
     stopTimer();
+    paused = false;
+    setPauseLabel();
+    keepAwake(true);
+
     if (state.timerMin > 0) {
+      $('tctl').classList.remove('veil');
       $('playHint').textContent = t('playHintTimer');
       const total = state.timerMin * 60;
       endAt = Date.now() + total * 1000;
       el.textContent = fmt(total);
-      tick = setInterval(() => {
-        const left = Math.ceil((endAt - Date.now()) / 1000);
-        if (left <= 0) {
-          stopTimer();
-          el.textContent = t('timeUp');
-          el.classList.add('done');
-          buzz([200, 100, 200]);
-        } else {
-          el.textContent = fmt(left);
-        }
-      }, 250);
+      runTimer();
     } else {
+      $('tctl').classList.add('veil');
       $('playHint').textContent = t('playHintNoTimer');
       el.textContent = '∞';
     }
     show('scr-play', 1);
   }
 
+  function togglePause() {
+    if (state.timerMin === 0 || $('timerEl').classList.contains('done')) return;
+    if (paused) {
+      endAt = Date.now() + leftPaused;
+      paused = false;
+      $('timerEl').classList.remove('paused');
+      runTimer();
+    } else {
+      leftPaused = Math.max(0, endAt - Date.now());
+      paused = true;
+      stopTimer();
+      $('timerEl').classList.add('paused');
+    }
+    setPauseLabel();
+  }
+
+  function addMinute() {
+    if (state.timerMin === 0) return;
+    const el = $('timerEl');
+    if (paused) { leftPaused += 60000; }
+    else {
+      if (el.classList.contains('done')) {     // revive an expired timer
+        el.classList.remove('done');
+        $('tctl').classList.remove('veil');
+        endAt = Date.now();
+      }
+      endAt += 60000;
+      runTimer();
+      el.textContent = fmt(Math.ceil((endAt - Date.now()) / 1000));
+    }
+    buzz(25);
+  }
+
   function doReveal() {
     stopTimer();
-    const names = [];
-    state.roles.forEach((isImp, i) => { if (isImp) names.push(nameOf(i)); });
+    keepAwake(false);
+    const names = impostorIndexes().map(nameOf);
     $('impPanelLbl').textContent = names.length > 1 ? t('theImpostersWere') : t('theImposterWas');
     $('impPanelVal').textContent = names.join(t('andJoin'));
-    $('wordPanelVal').textContent = state.word[state.lang === 'ar' ? 0 : 1];
+    $('wordPanelVal').textContent = wordMain();
+    $('wordPanelSub').textContent = wordSub();
     buzz([80, 60, 80, 60, 160]);
     show('scr-reveal', 1);
   }
@@ -1015,6 +1307,17 @@ if ('serviceWorker' in navigator) {
   }
   $('langBtn').addEventListener('click', toggleLang);
   $('homeLang').addEventListener('click', toggleLang);
+
+  $('themeBtn').addEventListener('click', () => {
+    state.theme = resolvedTheme() === 'dark' ? 'light' : 'dark';
+    save(); applyTheme();
+  });
+  $('themeSeg').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    state.theme = b.dataset.v;
+    save(); applyTheme();
+  });
 
   $('homePlay').addEventListener('click', () => show('scr-setup', 1));
   $('setupBack').addEventListener('click', () => show('scr-home', -1));
@@ -1046,6 +1349,16 @@ if ('serviceWorker' in navigator) {
     save(); renderSegs(); validate();
   });
 
+  $('swPartners').addEventListener('click', () => {
+    if ($('swPartners').disabled) return;
+    state.partners = !state.partners;
+    save(); renderSegs();
+  });
+  $('swHint').addEventListener('click', () => {
+    state.hint = !state.hint;
+    save(); renderSegs();
+  });
+
   $('timerSeg').addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b) return;
@@ -1069,8 +1382,10 @@ if ('serviceWorker' in navigator) {
   });
 
   $('playBtn').addEventListener('click', startPlay);
+  $('pauseBtn').addEventListener('click', togglePause);
+  $('addMinBtn').addEventListener('click', addMinute);
 
-  function backToSetup() { stopTimer(); show('scr-setup', -1); }
+  function backToSetup() { stopTimer(); keepAwake(false); show('scr-setup', -1); }
 
   $('revealBtn').addEventListener('click', () => askConfirm('confirmReveal', 'yesReveal', doReveal));
   $('exitBtn').addEventListener('click', () => askConfirm('confirmExit', 'yesExit', backToSetup));
@@ -1086,6 +1401,7 @@ if ('serviceWorker' in navigator) {
 
   /* ---------------- boot ---------------- */
   load();
+  applyTheme();
   applyLang();
 })();
 </script>

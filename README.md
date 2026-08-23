@@ -25,19 +25,32 @@ Built the same way as [Mob Rush](https://github.com/aboudat/mob-rush): a single 
 
 ## Game rules baked in
 
-- The imposter gets **no hint at all**, not the category and not a related word.
+- The imposter gets **no hint at all** by default. A setting can give them the category, never the word.
+- With two imposters, a setting lets them see each other, so they can play off one another.
 - Two imposters unlock at seven players or more, and the deal always leaves at least two players
   who know the word.
 - Word choice uses `crypto.getRandomValues` with modulo rejection, so the deal is uniform.
-- Both Arabic (RTL) and English (LTR) ship in the app, with a parallel word bank of about 290
+- Both Arabic (RTL) and English (LTR) ship in the app, with a parallel word bank of about 300
   words across 14 categories. The toggle is on the start screen and on the setup screen.
+- Proper nouns are written in Arabic the way people actually say them, not literally translated,
+  and the original name is shown underneath. So The Matrix is `ماتريكس` with "The Matrix" beneath
+  it, never `المصفوفة`. Categories carrying `latin: true` opt into that.
+- A word is not drawn again until 40 other words have been played, so a long night stops repeating.
 - Player colours deliberately exclude crimson, so a face-down card never reads as the imposter card.
 
 ## Look and feel
 
-Light theme on `#f4f5fa`, violet brand (`#6d3bf5`), crimson reserved for the imposter and for
-destructive actions. Screens slide in and out with direction-aware transitions, the role card is a
-real 3D flip, and everything collapses to instant under `prefers-reduced-motion`.
+Light and dark themes, plus auto which follows the system. Violet brand (`#6d3bf5`), crimson
+reserved for the imposter and for destructive actions. Screens slide in and out with
+direction-aware transitions, the role card is a real 3D flip, and everything collapses to instant
+under `prefers-reduced-motion`.
+
+Theme switching is deliberately atomic. `.screen` repaints its background instantly, so any
+transition on inherited colour leaves dark text on a dark ground for a frame. A `.theming` class
+suppresses every transition for one frame while the palette swaps.
+
+Content is capped at `--maxw` and centred, so the game stays a readable column on a tablet or a
+desktop browser rather than stretching edge to edge.
 
 ## Files
 
@@ -102,7 +115,8 @@ bubblewrap init --manifest https://<your-netlify-site>.netlify.app/manifest.json
 bubblewrap build
 ```
 
-Bubblewrap needs a JDK and the Android SDK, neither of which is installed on this machine yet.
+Bubblewrap itself is not installed, but the JDK and Android SDK it needs already are, at
+`C:\Users\tat_4\.androidtools`.
 
 Two things to finish before the first release:
 
