@@ -1,6 +1,6 @@
 # المحتال (Al Mohtal / The Imposter)
 
-A pass-the-phone party game. One device, three to twelve players. Everyone sees the same secret
+A pass-the-phone party game. One device, three to twenty players. Everyone sees the same secret
 word except the imposter, who sees only "أنت المحتال" and has to bluff their way through the
 questioning.
 

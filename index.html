@@ -799,7 +799,9 @@ if ('serviceWorker' in navigator) {
 
   // deliberately no crimson, so a player's card back never reads as the imposter card
   const COLORS = ['#0090ff','#f76b15','#12a594','#8e4ec6','#30a46c','#e93d82',
-                  '#3e63dd','#f5a524','#00a0c4','#d6409f','#5b5bd6','#946c1f'];
+                  '#3e63dd','#f5a524','#00a0c4','#d6409f','#5b5bd6','#946c1f',
+                  '#0f766e','#9a3412','#4d7c0f','#0369a1','#7e22ce','#155e75',
+                  '#86198f','#57534e'];
 
   /* ---------------- strings ---------------- */
   const STR = {
@@ -949,7 +951,7 @@ if ('serviceWorker' in navigator) {
 
   /* ---------------- state ---------------- */
   const KEY = 'almohtal.v1';
-  const MIN_PLAYERS = 3, MAX_PLAYERS = 12, TWO_IMP_MIN = 7, RECENT_MAX = 40;
+  const MIN_PLAYERS = 3, MAX_PLAYERS = 20, TWO_IMP_MIN = 7, RECENT_MAX = 40;
 
   const state = {
     lang:'ar',
