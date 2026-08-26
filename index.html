@@ -291,6 +291,10 @@
   .sheet .box p { font-size:18px; font-weight:700; line-height:1.6; margin-bottom:18px; }
   .sheet h3 { font-size:22px; font-weight:900; margin-bottom:16px; }
   .steps { text-align:start; display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+  /* the rules screen centres its short list, and the auto margins fall back to 0 once it overflows */
+  #scr-rules .scroll { display:flex; flex-direction:column; }
+  #scr-rules #rulesLead { margin-top:auto; }
+  #scr-rules .steps { margin-bottom:auto; }
   .stepline { display:flex; gap:12px; align-items:flex-start; }
   .stepline b { flex:0 0 28px; height:28px; border-radius:10px; background:var(--brand-soft);
                 color:var(--brand); font-size:14px; font-weight:900;
@@ -541,6 +545,22 @@
   </div>
   <footer class="bot">
     <button id="startBtn" class="primary" data-t="startGame"></button>
+    <button id="setupHow" class="link" data-t="howToPlay"></button>
+  </footer>
+</section>
+
+<!-- ================= RULES, shown before every round ================= -->
+<section id="scr-rules" class="screen">
+  <header class="top">
+    <button id="rulesBack" class="icon-btn">→</button>
+    <h2 data-t="howToPlay"></h2>
+  </header>
+  <div class="scroll">
+    <p class="lead" id="rulesLead"></p>
+    <div class="steps" id="rulesSteps"></div>
+  </div>
+  <footer class="bot">
+    <button id="rulesNext" class="primary" data-t="next"></button>
   </footer>
 </section>
 
@@ -813,6 +833,10 @@ if ('serviceWorker' in navigator) {
       play:'العب',
       howToPlay:'كيف تلعب؟',
       gotIt:'فهمت',
+      next:'التالي',
+      // opens and closes on Arabic, so the digit never fights the RTL paragraph
+      roundLine:(p, i) => (i === 1 ? 'محتال واحد' : 'محتالان') + ' بين ' +
+                          p + ' ' + (p <= 10 ? 'لاعبين' : 'لاعباً'),
       steps:[
         'أضف أسماء اللاعبين، ثلاثة على الأقل.',
         'مرر الجهاز. كل لاعب يقلب بطاقته ويرى الكلمة السرية، إلا المحتال.',
@@ -884,6 +908,8 @@ if ('serviceWorker' in navigator) {
       play:'Play',
       howToPlay:'How to play',
       gotIt:'Got it',
+      next:'Next',
+      roundLine:(p, i) => i + (i === 1 ? ' imposter' : ' imposters') + ' among ' + p + ' players',
       steps:[
         'Add player names, three at minimum.',
         'Pass the phone. Each player flips their card and sees the secret word, except the imposter.',
@@ -1091,6 +1117,7 @@ if ('serviceWorker' in navigator) {
     document.title = t('brand');
     $('homeTitle').textContent = t('brand');
     $('setupBack').textContent = t('backArrow');
+    $('rulesBack').textContent = t('backArrow');
     const label = state.lang === 'ar' ? 'EN' : 'ع';
     $('langBtn').textContent = label;
     $('homeLang').textContent = label;
@@ -1106,18 +1133,20 @@ if ('serviceWorker' in navigator) {
     validate();
   }
 
+  // the same five steps feed the sheet on the home screen and the screen before each round
   function renderHow() {
-    const box = $('howSteps');
-    box.innerHTML = '';
-    t('steps').forEach((s, i) => {
-      const row = document.createElement('div');
-      row.className = 'stepline';
-      const b = document.createElement('b');
-      b.textContent = i + 1;
-      const span = document.createElement('span');
-      span.textContent = s;
-      row.appendChild(b); row.appendChild(span);
-      box.appendChild(row);
+    [$('howSteps'), $('rulesSteps')].forEach(box => {
+      box.innerHTML = '';
+      t('steps').forEach((s, i) => {
+        const row = document.createElement('div');
+        row.className = 'stepline';
+        const b = document.createElement('b');
+        b.textContent = i + 1;
+        const span = document.createElement('span');
+        span.textContent = s;
+        row.appendChild(b); row.appendChild(span);
+        box.appendChild(row);
+      });
     });
   }
 
@@ -1208,6 +1237,17 @@ if ('serviceWorker' in navigator) {
   }
 
   /* ---------------- round flow ---------------- */
+  // always leave two players who know the word, whatever the setting says
+  function impCount() {
+    return Math.max(1, Math.min(state.imposters, state.players.length - 2));
+  }
+
+  // the rules, then Next deals and starts passing the phone
+  function showRules(dir) {
+    $('rulesLead').textContent = t('roundLine')(state.players.length, impCount());
+    show('scr-rules', dir);
+  }
+
   function deal() {
     // draw uniformly across every enabled word, skipping anything played recently
     const pool = [];
@@ -1224,7 +1264,7 @@ if ('serviceWorker' in navigator) {
     while (state.recent.length > RECENT_MAX) state.recent.shift();
 
     const n = state.players.length;
-    const k = Math.max(1, Math.min(state.imposters, n - 2));   // always leave two who know the word
+    const k = impCount();
     state.roles = new Array(n).fill(false);
     pickDistinct(k, n).forEach(i => { state.roles[i] = true; });
 
@@ -1569,8 +1609,12 @@ if ('serviceWorker' in navigator) {
   $('startBtn').addEventListener('click', () => {
     if ($('startBtn').disabled) return;
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    deal(); playDeal(() => showPass(1));
+    showRules(1);
   });
+
+  $('setupHow').addEventListener('click', () => $('howSheet').classList.add('on'));
+  $('rulesBack').addEventListener('click', backToSetup);
+  $('rulesNext').addEventListener('click', () => { deal(); playDeal(() => showPass(1)); });
 
   $('imBtn').addEventListener('click', showCard);
   $('flip').addEventListener('click', flipCard);
@@ -1596,7 +1640,7 @@ if ('serviceWorker' in navigator) {
     if (fn) fn();
   });
 
-  $('againBtn').addEventListener('click', () => { deal(); playDeal(() => showPass(1)); });
+  $('againBtn').addEventListener('click', () => showRules(1));
   $('backBtn').addEventListener('click', backToSetup);
 
   /* ---------------- boot ---------------- */

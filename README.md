@@ -12,15 +12,20 @@ Built the same way as [Mob Rush](https://github.com/aboudat/mob-rush): a single 
 0. **Start screen.** Logo, title, a Play button, and a "how to play" sheet with the five steps.
 1. **Setup.** Type the player names, each with its own colour. Pick how many imposters, how long
    the discussion runs, and which word categories are in play. Everything is saved on the device
-   for next time.
-2. **Pass around.** The screen names one player at a time. That player taps the button carrying
+   for next time. A "how to play" button under the start button opens the same sheet as the start
+   screen.
+2. **The rules.** Every round opens on a full screen of the five steps, with a line saying how
+   many imposters are hiding among how many players, and a Next button that deals and starts the
+   pass-around. It sits on the way in from both start and play again, so a table with a newcomer
+   never has to be talked through the game.
+3. **Pass around.** The screen names one player at a time. That player taps the button carrying
    their own name, then taps the face-down card, which flips over in 3D to show their role. They
    tap "تم، أخفِ ومرر" and hand the phone on. Nobody can see the previous player's card, because
    the app returns to a name-only screen between players and the next card starts face down.
-3. **Who starts.** The app picks a random player to ask the first question.
-4. **Quiet.** The phone is put down. Players question each other and vote out loud. An optional
+4. **Who starts.** The app picks a random player to ask the first question.
+5. **Quiet.** The phone is put down. Players question each other and vote out loud. An optional
    countdown runs on screen. The app does nothing else.
-5. **Reveal.** One tap plus a confirmation shows who the imposter was and what the word was.
+6. **Reveal.** One tap plus a confirmation shows who the imposter was and what the word was.
    Then either deal a new round with the same players or go back and edit them.
 
 ## Game rules baked in
@@ -94,6 +99,11 @@ python -m http.server 8000
 Netlify serves the live origin. Content-only changes ship by redeploying, with no Play release
 needed, **but bump the `CACHE` name in `sw.js` when you do** or players keep the old cached copy
 and never see the change.
+
+GitHub Pages serves a test origin from `main` at https://aboudat.github.io/almohtal/, which is how
+the game gets onto an iPhone: open it in Safari, Share, Add to Home Screen. That is the only
+practical route on iOS, since Apple has no sideloadable equivalent of an APK. Every push to `main`
+redeploys it, and `.nojekyll` keeps Pages from hiding `.well-known/`.
 
 ## Android test builds
 

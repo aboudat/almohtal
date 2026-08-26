@@ -1,4 +1,4 @@
-const CACHE = 'almohtal-v2';
+const CACHE = 'almohtal-v3';
 const ASSETS = [
   './',
   './index.html',
