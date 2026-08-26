@@ -100,6 +100,12 @@ Netlify serves the live origin. Content-only changes ship by redeploying, with n
 needed, **but bump the `CACHE` name in `sw.js` when you do** or players keep the old cached copy
 and never see the change.
 
+The cache is cache-first, which on its own hands a returning player the build they already
+have and only picks up the new one on the visit after, so a shipped change reads as missing. The
+page listens for the worker claiming it and reloads once on that handover, which lands the new
+build on the same visit. That reload is suppressed on the very first registration and once a round
+is under way, so it never interrupts a game.
+
 GitHub Pages serves a test origin from `main` at https://aboudat.github.io/almohtal/, which is how
 the game gets onto an iPhone: open it in Safari, Share, Add to Home Screen. That is the only
 practical route on iOS, since Apple has no sideloadable equivalent of an APK. Every push to `main`

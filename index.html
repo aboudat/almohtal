@@ -690,7 +690,24 @@
 
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  /* The cache is deliberately cache-first, so a returning player is served the build they already
+     have and only picks up a new one on the visit after. That reads as "the update did not ship".
+     The worker claims the page as soon as it activates, so reload once on that handover and the
+     new build lands on this visit instead of the next.
+     Guarded twice: not on the very first registration, when there was no build to replace, and
+     not once the phone is being passed around, so an update never interrupts a round. */
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    const live = document.querySelector('.screen.on');
+    if (live && live.id !== 'scr-splash' && live.id !== 'scr-home') return;
+    reloading = true;
+    location.reload();
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+  });
 }
 
 (() => {
